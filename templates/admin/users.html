@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+               body { font-family: 'Inter', sans-serif; margin: 0; display: flex; background-color: var(--bg-light, #f0f2f5); }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; }
+        .content-wrapper { padding: 2em; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em; }
+        .page-header h1 { margin: 0; font-size: 1.5em; }
+        .page-header p { margin: 0; color: #6c757d; }
+        .header-actions { display: flex; align-items: center; }
+        .search-bar { margin-right: 1em; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+        .add-user-btn { display: inline-block; padding: 10px 15px; background-color: #5a685a; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; background-color: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #6c757d; font-weight: normal; text-transform: uppercase; font-size: 0.85em; }
+        .user-cell { display: flex; align-items: center; }
+        .user-cell img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
+        .actions a { margin-right: 10px; text-decoration: none; }
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: #fff; border-radius: 8px; width: 500px; max-width: 90%; }
+        .modal-header { padding: 20px 30px; border-bottom: 1px solid #eee; position: relative; }
+        .modal-header h2 { margin: 0; }
+        .close-modal { position: absolute; top: 15px; right: 25px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .modal-body { padding: 30px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .modal-footer { padding: 20px 30px; border-top: 1px solid #eee; text-align: right; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-save { background-color: #5a685a; color: white; }
+        .btn-cancel { background-color: #f1f1f1; color: #333; margin-right: 10px; }
+        .btn-danger { background-color: #dc3545; color: white; text-decoration: none;}
+        .pagination { display: flex; justify-content: center; margin-top: 2em; }
+        .pagination a, .pagination span { color: #5a685a; padding: 8px 16px; text-decoration: none; transition: background-color .3s; border: 1px solid #ddd; margin: 0 4px; }
+        .pagination a.active { background-color: #5a685a; color: white; border: 1px solid #5a685a; }
+        .pagination a:hover:not(.active) { background-color: #ddd; }
+        .pagination .disabled { color: #ccc; border-color: #eee; }
+                .flash-message { padding: 1rem; margin-bottom: 1rem; border-radius: 5px; font-weight: 500; }
+        .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+            .error-text {
+        color: #dc3545;
+        font-size: 0.8em;
+        margin-top: 4px;
+        display: block;
+    }
+    </style>
+</head>
+<body>
+    {% include 'admin/partials/sidebar.html' %}
+    <div class="main-content">
+        {% include 'admin/partials/header.html' %}
+        <main class="content-wrapper">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div class="page-header">
+                <div class="header-actions">
+                    <form action="{{ url_for('admin_users') }}" method="get" class="search-form">
+                        <input type="text" name="search" placeholder="Search users..." class="search-bar" value="{{ search_term or '' }}">
+                    </form>
+                    <!-- <a href="#" class="add-user-btn" onclick="openAddModal()">+ Add New User</a> -->
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <!-- <img src="{{ url_for('static', filename='products/default_avatar.png') }}" alt="{{ user.name }}"> -->
+                                <div>
+                                    <strong>{{ user.name }}</strong><br>
+                                    <small>{{ user.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ user.role }}</td>
+                        <td>{{ user.phone or 'N/A' }}</td>
+                        <td>{{ user.status or 'active' }}</td>
+                        <td>{{ user.createdat.strftime('%Y-%m-%d') }}</td>
+                        <td class="actions">
+                            <a href="#" onclick="openEditModal({{ user.id }})">✏️</a>
+                            <a href="#" onclick="openDeleteModal('{{ url_for('delete_user', user_id=user.id) }}')">🗑️</a>
+                        </td>
+                    </tr>
+                                        {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #6c757d;">
+                            No users found matching your search.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+                        <div class="pagination">
+                {% if page > 1 %}
+                    <a href="{{ url_for('admin_users', page=page-1, search=search_term) }}">« Previous</a>
+                {% else %}
+                    <span class="disabled">« Previous</span>
+                {% endif %}
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <a class="active">{{ p }}</a>
+                    {% else %}
+                        <a href="{{ url_for('admin_users', page=p, search=search_term) }}">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page < total_pages %}
+                    <a href="{{ url_for('admin_users', page=page+1, search=search_term) }}">Next »</a>
+                {% else %}
+                    <span class="disabled">Next »</span>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+    <!-- Delete Confirmation Modal -->
+
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal-content" style="width: 400px;">
+             <div class="modal-header">
+                <h2>Confirm Deletion</h2>
+                <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <p style="font-size: 1.1em;">Are you sure you want to delete this user?</p>
+                <p style="color: #6c757d;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <a id="confirm-delete-btn" href="#" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+<div id="user-modal" class="modal-overlay">
+    <div class="modal-content">
+        <form id="user-form" method="post" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="modal-header">
+                <h2 id="modal-title">Add New User</h2>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    {{ form.name(id="name") }}
+                    {% if edit_errors and 'name' in edit_errors %}
+                        <small class="error-text">{{ edit_errors.name[0] }}</small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    {{ form.email(id="email") }}
+                    {% if edit_errors and 'email' in edit_errors %}
+                        <small class="error-text">{{ edit_errors.email[0] }}</small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    {{ form.password(id="password") }}
+                    <small id="password-help">Leave blank to keep current password when editing.</small>
+                    {% if edit_errors and 'password' in edit_errors %}
+                        <small class="error-text">{{ edit_errors.password[0] }}</small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="customer">Customer</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status" required>
+                        <option value="active">Active</option>
+                        <option value="deactivated">Deactivated</option>
+                    </select>
+                    {% if edit_errors and 'status' in edit_errors %}
+                        <small class="error-text">{{ edit_errors.status[0] }}</small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    {{ form.phone(id="phone") }}
+                    {% if edit_errors and 'phone' in edit_errors %}
+                        <small class="error-text">{{ edit_errors.phone[0] }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-save">Save User</button>
+            </div>
+        </form>
+    </div>
+</div>
+    <script>
+        const modal = document.getElementById('user-modal');
+        const form = document.getElementById('user-form');
+        const modalTitle = document.getElementById('modal-title');
+        const passwordHelp = document.getElementById('password-help');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+        function closeModal() {
+            modal.style.display = 'none';
+            form.reset();
+        }
+
+        function openAddModal() {
+            form.action = "{{ url_for('add_user') }}";
+            modalTitle.textContent = 'Add New User';
+            document.getElementById('password').required = true;
+            document.getElementById('status').value = 'active';
+            passwordHelp.style.display = 'none';
+            modal.style.display = 'flex';
+        }
+        function openEditModal(userId) {
+            fetch(`/admin/users/edit/${userId}`)
+                .then(response => response.json())
+                .then(user => {
+                    form.action = `/admin/users/edit/${userId}`;
+                    modalTitle.textContent = 'Edit User';
+                    document.getElementById('name').value = user.name;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('role').value = user.role;
+                    document.getElementById('status').value = user.status || 'active';
+                    document.getElementById('phone').value = user.phone;
+                    document.getElementById('password').required = false;
+                    passwordHelp.style.display = 'block';
+                    modal.style.display = 'flex';
+                });
+        }
+        function closeDeleteModal() {
+            deleteModal.style.display = 'none';
+        }
+
+    function openDeleteModal(deleteUrl) {
+            confirmDeleteBtn.href = deleteUrl;
+            deleteModal.style.display = 'flex';
+        }
+
+        window.onclick = (event) => {
+            if (event.target == modal) closeModal();
+            if (event.target == deleteModal) closeDeleteModal();
+            
+            document.querySelectorAll('.error-text').forEach(el => el.remove());
+            document.querySelectorAll('.form-group input, .form-group select').forEach(el => el.style.borderColor = '');
+        };
+
+        
+
+        // Fade out flash messages
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            if (flashMessages.length > 0) {
+                setTimeout(() => {
+                    flashMessages.forEach(message => {
+                        message.style.transition = 'opacity 0.5s ease';
+                        message.style.opacity = '0';
+                        setTimeout(() => message.remove(), 500); // Remove after fade
+                    });
+                }, 3000); // 3 seconds
+            }
+        });
+
+        document.getElementById('user-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const url = this.action;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            // Clear previous errors
+            document.querySelectorAll('.error-text').forEach(el => el.remove());
+            document.querySelectorAll('.form-group input, .form-group select').forEach(el => el.style.borderColor = '');
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload(); // Reload page only on success
+                } else {
+                    // Stop loading and show errors
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    
+                    if (data.errors) {
+                        for (const [field, errors] of Object.entries(data.errors)) {
+                            const input = document.getElementById(field);
+                            if (input) {
+                                input.style.borderColor = '#dc3545';
+                                const errorSmall = document.createElement('small');
+                                errorSmall.className = 'error-text';
+                                errorSmall.style.color = '#dc3545';
+                                errorSmall.style.marginTop = '4px';
+                                errorSmall.style.display = 'block';
+                                errorSmall.textContent = errors[0];
+                                input.parentNode.appendChild(errorSmall);
+                            }
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.disabled = false;
+            })
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}HealthCart - Your Trusted Healthcare Store{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <span class="hero-badge">Trusted Healthcare Partner</span>
+            <h1>Your Health, <span class="text-gradient">Our Priority</span></h1>
+            <p>Discover quality healthcare products from vitamins to medical devices. Fast delivery, trusted brands, and excellent customer service.</p>
+            <div class="hero-buttons">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('shop') }}" class="btn btn-primary btn-lg">
+                    <span>Go to Shop</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                {% else %}
+                <button onclick="openModal('registerModal')" class="btn btn-primary btn-lg">
+                    <span>Get Started</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <button onclick="openModal('loginModal')" class="btn btn-glass btn-lg">Login</button>
+                {% endif %}
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">40+</span>
+                    <span class="stat-label">Products</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-number">8</span>
+                    <span class="stat-label">Categories</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-number">5+</span>
+                    <span class="stat-label">Years</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-image-wrapper">
+                <img src="{{ url_for('static', filename='images/illustration.png') }}" alt="Healthcare Products">
+                <div class="hero-float-card card-1">
+                    <span class="float-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <strong>Vitamins</strong>
+                        <small>Premium Quality</small>
+                    </div>
+                </div>
+                <div class="hero-float-card card-2">
+                    <span class="float-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13" rx="2"/>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <strong>Fast Delivery</strong>
+                        <small>Same Day</small>
+                    </div>
+                </div>
+                <div class="hero-float-card card-3">
+                    <span class="float-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <strong>FDA Approved</strong>
+                        <small>100% Genuine</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="features-container">
+        <div class="feature">
+            <div class="feature-icon-wrapper">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13" rx="2"/>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+            </div>
+            <h3>Fast Delivery</h3>
+            <p>Same-day delivery in Metro Manila</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon-wrapper">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+            <h3>Genuine Products</h3>
+            <p>100% authentic healthcare items</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon-wrapper">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+            </div>
+            <h3>Secure Payment</h3>
+            <p>Multiple payment options available</p>
+        </div>
+    </div>
+</section>
+
+<!-- Products Section with Category Filter -->
+<section class="products" id="products">
+    <div class="section-container">
+        <div class="section-header">
+            <span class="section-badge">Products</span>
+            <h2>Our Products</h2>
+            <p>Browse our complete collection of healthcare essentials</p>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="category-filter">
+            <button class="filter-btn active" data-category="all">All</button>
+            {% for category in categories %}
+            <button class="filter-btn" data-category="{{ category.id }}">{{ category.name }}</button>
+            {% endfor %}
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            {% for product in featured_products %}
+            <div class="product-card preview-card" data-category="{{ product.categoryid }}">
+                <div class="product-image">
+                    {% if product.imagepath %}
+                        {% if product.imagepath.startswith('http') or product.imagepath.startswith('/') %}
+                            <img src="{{ product.imagepath }}" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='uploads/' + product.imagepath) }}" alt="{{ product.name }}">
+                        {% endif %}
+                    {% else %}
+                        <img src="{{ product.imagepath or 'https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM=' }}" alt="{{ product.name }}">
+                    {% endif %}
+                    {% if product.stock < 10 and product.stock > 0 %}
+                    <span class="product-badge badge-warning">Low Stock</span>
+                    {% elif product.stock == 0 %}
+                    <span class="product-badge badge-out">Out of Stock</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <span class="product-category">{{ product.category_name or 'Uncategorized' }}</span>
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <div class="product-footer">
+                        <span class="product-price">₱{{ "%.2f"|format(product.price) }}</span>
+                        {% if product.stock > 0 %}
+                        <span class="product-stock in-stock">In Stock</span>
+                        {% else %}
+                        <span class="product-stock out-stock">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <button class="pagination-btn" id="prevPage" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Prev
+            </button>
+            <div class="pagination-numbers" id="paginationNumbers">
+                <!-- Generated by JS -->
+            </div>
+            <button class="pagination-btn" id="nextPage">
+                Next
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="section-footer">
+            {% if session.get('user_id') %}
+            <a href="{{ url_for('shop') }}" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                Go to Shop
+            </a>
+            {% else %}
+            <button onclick="openModal('registerModal')" class="btn btn-primary btn-lg">
+                Create Account to Shop
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="why-us" id="why-us">
+    <div class="section-container">
+        <div class="why-us-content">
+            <div class="why-us-text">
+                <span class="section-badge">Why Us</span>
+                <h2>Why Choose HealthCart?</h2>
+                <p class="why-us-intro">We're committed to providing the best healthcare products with exceptional service.</p>
+                <ul class="why-us-list">
+                    <li>
+                        <span class="check-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <strong>FDA Approved Products</strong>
+                            <p>All our products are certified and approved by regulatory authorities</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="check-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <strong>Licensed Pharmacists</strong>
+                            <p>Get expert advice from our team of licensed healthcare professionals</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="check-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <strong>Secure & Private</strong>
+                            <p>Your health information and transactions are always protected</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="check-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <strong>Easy Returns</strong>
+                            <p>Hassle-free returns within 7 days of purchase</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="why-us-image">
+                <div class="why-us-image-wrapper">
+                    <img src="{{ url_for('static', filename='images/illustration.png') }}" alt="Why Choose Us">
+                    <div class="why-us-badge">
+                        <span class="badge-number">5+</span>
+                        <span class="badge-text">Years of Trust</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section (for non-logged in users) -->
+{% if not session.get('user_id') %}
+<section class="cta-section">
+    <div class="section-container">
+        <div class="cta-content">
+            <h2>Ready to Start Shopping?</h2>
+            <p>Create your free account today and get access to exclusive deals and fast checkout</p>
+            <div class="cta-buttons">
+                <button onclick="openModal('registerModal')" class="btn btn-white btn-lg">
+                    Create Free Account
+                </button>
+                <button onclick="openModal('loginModal')" class="btn btn-outline-white btn-lg">
+                    Login
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const productCards = document.querySelectorAll('.product-card');
+    const productsGrid = document.getElementById('productsGrid');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    const paginationNumbers = document.getElementById('paginationNumbers');
+
+    const itemsPerPage = 8;
+    let currentPage = 1;
+    let filteredProducts = Array.from(productCards);
+
+    // Filter functionality
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const category = this.dataset.category;
+
+            if (category === 'all') {
+                filteredProducts = Array.from(productCards);
+            } else {
+                filteredProducts = Array.from(productCards).filter(card =>
+                    card.dataset.category === category
+                );
+            }
+
+            currentPage = 1;
+            renderProducts();
+            renderPagination();
+        });
+    });
+
+    function renderProducts() {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+
+        productCards.forEach(card => card.style.display = 'none');
+
+        filteredProducts.slice(start, end).forEach(card => {
+            card.style.display = 'flex';
+        });
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        paginationNumbers.innerHTML = '';
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `pagination-number ${i === currentPage ? 'active' : ''}`;
+            pageBtn.textContent = i;
+            pageBtn.addEventListener('click', () => {
+                currentPage = i;
+                renderProducts();
+                updatePaginationState();
+            });
+            paginationNumbers.appendChild(pageBtn);
+        }
+
+        updatePaginationState();
+    }
+
+    function updatePaginationState() {
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+        document.querySelectorAll('.pagination-number').forEach((btn, idx) => {
+            btn.classList.toggle('active', idx + 1 === currentPage);
+        });
+    }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderProducts();
+            updatePaginationState();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderProducts();
+            updatePaginationState();
+        }
+    });
+
+    // Initial render
+    renderProducts();
+    renderPagination();
+});
+</script>
+{% endblock %}

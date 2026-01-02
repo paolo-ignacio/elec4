@@ -1,0 +1,81 @@
+<div id="product-modal" class="modal-overlay">
+    <div class="modal-content">
+        <form id="product-form" method="post" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="modal-header">
+                <h2 id="modal-title">Edit Product Details</h2>
+                <p>Update product information and inventory</p>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-left">
+                    <label>Product Image</label>
+                    <div class="image-upload-box">
+                        <img id="image-preview" src="" alt="Product Image Preview" style="display:none; max-width: 100%; max-height: 120px; margin-bottom: 10px;">
+                        <p>Drop Image here or <a href="#" onclick="document.getElementById('image').click(); return false;">Browse files</a></p>
+                        <small>PNG, JPG, up to 16MB</small>
+                        {{ form.image(id="image", style="display: none;", onchange="previewImage(this)") }}
+                        {% if form.image.errors %}
+                            <small class="error-text">{{ form.image.errors[0] }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-right">
+                    <div class="form-group full-width">
+                        <label for="name">Product Name</label>
+                        {{ form.name(id="name", placeholder="Enter product name") }}
+                        {% if form.name.errors %}
+                            <small class="error-text">{{ form.name.errors[0] }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        {{ form.price(id="price", placeholder="0.00", step="0.01") }}
+                        {% if form.price.errors %}
+                            <small class="error-text">{{ form.price.errors[0] }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="stock">Stock Quantity</label>
+                        {{ form.stock(id="stock", placeholder="0") }}
+                        {% if form.stock.errors %}
+                            <small class="error-text">{{ form.stock.errors[0] }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="categoryid">Category</label>
+                        {{ form.categoryid(id="categoryid") }}
+                        {% if form.categoryid.errors %}
+                            <small class="error-text">{{ form.categoryid.errors[0] }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="description">Description</label>
+                        {{ form.description(id="description", rows="4", placeholder="Enter product description") }}
+                        {% if form.description.errors %}
+                            <small class="error-text">{{ form.description.errors[0] }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-save" id="save-product-btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        const preview = document.getElementById('image-preview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>

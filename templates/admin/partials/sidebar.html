@@ -1,0 +1,127 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <a href="{{ url_for('dashboard') }}" class="sidebar-logo-link">
+            <span class="logo-icon">+</span>
+            HealthCart
+        </a>
+        <span>Admin Panel</span>
+    </div>
+    <nav class="sidebar-nav">
+        <p>Main Menu</p>
+        <ul>
+            <li class="{{ 'active' if active_page == 'dashboard' else '' }}"><a href="{{ url_for('dashboard') }}"><span>📊</span>Dashboard</a></li>
+            <li class="{{ 'active' if active_page == 'products' else '' }}"><a href="{{ url_for('admin_products') }}"><span>📦</span>Products</a></li>
+            <li class="{{ 'active' if active_page == 'categories' else '' }}"><a href="{{ url_for('admin_categories') }}"><span>🏷️</span>Categories</a></li>
+            <li class="{{ 'active' if active_page == 'orders' else '' }}"><a href="{{ url_for('admin_orders') }}"><span>🛒</span>Orders</a></li>
+            <li class="{{ 'active' if active_page == 'sales_report' else '' }}"><a href="{{ url_for('admin_sales_report') }}"><span>📈</span>Sales Report</a></li>
+
+            <li class="{{ 'active' if active_page == 'users' else '' }}"><a href="{{ url_for('admin_users') }}"><span>👥</span>Users</a></li>
+        </ul>
+        <p>Settings</p>
+        <ul>
+            <!-- <li><a href="#"><span>⚙️</span>Settings</a></li> -->
+            <li><a href="{{ url_for('admin_logout')}}"><span>🚪</span>Logout</a></li>
+        </ul>
+    </nav>
+</aside>
+
+<style>
+    :root {
+
+    --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+}
+    .sidebar {
+        width: 260px;
+        background-color: var(--bg-white, #FFFFFF);
+        height: 100vh;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--border-color, #f0f0f0);
+        box-sizing: border-box;
+        flex-shrink: 0;
+        
+  
+        position: sticky;
+        top: 0;
+        overflow-y: auto;
+
+    }
+    .sidebar-header {
+        display: block;
+        text-align: left;
+        margin-bottom: 2.5rem;
+    }
+    .sidebar-logo-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text-dark, #111827);
+        text-decoration: none;
+        margin-bottom: 5px;
+    }
+    .logo-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: var(--radius-sm, 6px);
+        font-weight: 700;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    .sidebar-logo-link h3 {
+        margin: 0;
+        font-size: 1.2em;
+        font-weight: 800;
+    }
+    /* .sidebar-header span {
+        font-size: 0.9em;
+        color: var(--text-muted, #8A92A6);
+
+    } */
+    .sidebar-nav p {
+        font-size: 0.8em;
+        color: var(--text-muted, #8A92A6);
+        text-transform: uppercase;
+        margin: 2rem 0 1rem 0;
+        font-weight: 600;
+    }
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .sidebar-nav li a {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        text-decoration: none;
+        color: #343a40;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-weight: 500;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .sidebar-nav li a span {
+        margin-right: 15px;
+        font-size: 1.2em;
+    }
+    .sidebar-nav li.active a {
+        background-color: var(--primary-light, #eef2ff);
+        color: var(--primary-color, #4f46e5);
+        font-weight: 600;
+    }
+    .sidebar-nav li a:hover {
+        background-color: var(--bg-light, #f8f9fa);
+    }
+    .sidebar-nav li a:hover:not(.active) {
+        background-color: #f8f9fa;
+    }
+</style>

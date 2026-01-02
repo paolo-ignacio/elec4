@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; display: flex; background-color: var(--bg-light, #f0f2f5); }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; }
+        .content-wrapper { padding: 2em; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em; }
+        .page-header h1 { margin: 0; font-size: 1.5em; }
+        .page-header p { margin: 0; color: #6c757d; }
+        .filter-controls { margin-bottom: 1.5em; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .filter-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .filter-group label { font-size: 0.9em; color: #6c757d; }
+        .filter-group input[type="date"] { padding: 8px; border-radius: 5px; border: 1px solid #ddd; }
+        .period-filters a { background: none; border: 1px solid #ddd; padding: 8px 12px; border-radius: 5px; cursor: pointer; text-decoration: none; color: #6c757d; font-size: 0.9em; margin-left: 4px; }
+        .period-filters a.active { background-color: #eef2ff; color: #4f46e5; border-color: #4f46e5; font-weight: 600; }
+
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 1.5em; }
+        .card { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card h3 { margin: 0 0 8px 0; color: #6c757d; font-size: 0.9em; text-transform: uppercase; }
+        .card .value { font-size: 1.8em; font-weight: bold; color: #111827; }
+
+        table { width: 100%; border-collapse: collapse; background-color: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #6c757d; font-weight: normal; text-transform: uppercase; font-size: 0.85em; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .status { padding: 5px 10px; border-radius: 15px; font-size: 0.8em; text-transform: capitalize; }
+        .status-completed { background-color: #d4edda; color: #155724; }
+
+        .btn-primary { padding: 9px 16px; background-color: #5a685a; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .btn-primary:hover { background-color: #4a574a; }
+
+        .flash-message { padding: 1rem; margin-bottom: 1rem; border-radius: 5px; font-weight: 500; }
+        .flash-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .flash-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+    {% include 'admin/partials/sidebar.html' %}
+    <div class="main-content">
+        {% include 'admin/partials/header.html' %}
+        <main class="content-wrapper">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="page-header">
+                <div>
+                    <h1>Sales Report</h1>
+                    <p>View completed orders and total sales for a selected period.</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-controls">
+                <form method="get" action="{{ url_for('admin_sales_report') }}" class="filter-group">
+                    <label for="start_date">From</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+                    <label for="end_date">To</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+                    <button type="submit" class="btn-primary">Apply</button>
+                </form>
+
+                <div class="period-filters">
+                    <span style="font-size:0.9em;color:#6c757d;">Quick filters:</span>
+                    <a href="{{ url_for('admin_sales_report', period='daily') }}" class="{{ 'active' if period == 'daily' else '' }}">Daily</a>
+                    <a href="{{ url_for('admin_sales_report', period='weekly') }}" class="{{ 'active' if period == 'weekly' else '' }}">Weekly</a>
+                    <a href="{{ url_for('admin_sales_report', period='monthly') }}" class="{{ 'active' if period == 'monthly' else '' }}">Monthly</a>
+                </div>
+            </div>
+
+            <!-- Summary cards -->
+            <div class="summary-cards">
+                <div class="card">
+                    <h3>Total Sales</h3>
+                    <p class="value">P{{ "{:,.2f}".format(summary.total_sales or 0) }}</p>
+                </div>
+                <div class="card">
+                    <h3>Completed Orders</h3>
+                    <p class="value">{{ summary.total_orders or 0 }}</p>
+                </div>
+            </div>
+
+            <!-- Orders table -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Date Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>P{{ "{:,.2f}".format(order.totalamount) }}</td>
+                        <td><span class="status status-completed">Completed</span></td>
+                        <td>{{ order.createdat.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #6c757d;">
+                            No completed orders found for the selected period.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </main>
+    </div>
+</body>
+</html>
