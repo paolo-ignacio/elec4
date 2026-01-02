@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 01, 2026 at 10:49 AM
+-- Generation Time: Jan 02, 2026 at 08:18 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -62,7 +62,8 @@ CREATE TABLE `carts` (
 INSERT INTO `carts` (`id`, `userid`, `created_at`) VALUES
 (1, 2, '2026-01-01 05:17:24'),
 (2, 3, '2026-01-01 05:17:24'),
-(3, 6, '2026-01-01 09:36:23');
+(3, 6, '2026-01-01 09:36:23'),
+(4, 8, '2026-01-02 06:42:28');
 
 -- --------------------------------------------------------
 
@@ -163,7 +164,15 @@ INSERT INTO `orderitems` (`id`, `orderid`, `productid`, `quantity`, `price`) VAL
 (19, 12, 7, 2, 180.00),
 (20, 13, 12, 1, 85.00),
 (21, 14, 1, 1, 299.00),
-(22, 15, 5, 3, 250.00);
+(22, 15, 5, 3, 250.00),
+(23, 16, 5, 2, 250.00),
+(24, 16, 16, 1, 1850.00),
+(25, 17, 33, 1, 165.00),
+(26, 17, 8, 1, 95.00),
+(27, 18, 22, 2, 550.00),
+(28, 19, 26, 5, 85.00),
+(29, 19, 27, 1, 120.00),
+(30, 20, 35, 1, 750.00);
 
 -- --------------------------------------------------------
 
@@ -176,6 +185,7 @@ CREATE TABLE `orders` (
   `userid` int(11) DEFAULT NULL,
   `totalamount` decimal(10,2) NOT NULL,
   `status` enum('pending','processing','shipped','completed','cancelled') DEFAULT 'pending',
+  `cancellation_reason` text DEFAULT NULL,
   `shippingaddress` varchar(200) DEFAULT NULL,
   `createdat` datetime DEFAULT current_timestamp(),
   `updatedat` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -185,12 +195,27 @@ CREATE TABLE `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `userid`, `totalamount`, `status`, `shippingaddress`, `createdat`, `updatedat`) VALUES
-(11, 2, 900.00, 'processing', '456 Rizal Ave, Quezon City, Philippines\nPhone: 09181234567', '2026-01-01 16:51:13', '2026-01-01 16:51:13'),
-(12, 2, 1260.00, 'processing', '456 Rizal Ave, Quezon City, Philippines\nPhone: 09181234567', '2026-01-01 16:57:13', '2026-01-01 16:57:13'),
-(13, 2, 85.00, 'processing', '456 Rizal Ave, Quezon City, Philippinesss\nPhone: 09181234567', '2026-01-01 17:18:56', '2026-01-01 17:18:56'),
-(14, 6, 299.00, 'processing', 'Doon sa malayo\nPhone: 09998558975', '2026-01-01 17:36:38', '2026-01-01 17:36:38'),
-(15, 2, 750.00, 'processing', '456 Rizal Ave, Quezon City, Philippinesss\nPhone: 09181234567', '2026-01-01 17:47:38', '2026-01-01 17:47:38');
+INSERT INTO `orders` (`id`, `userid`, `totalamount`, `status`, `cancellation_reason`, `shippingaddress`, `createdat`, `updatedat`) VALUES
+(11, 2, 900.00, 'processing', NULL, '456 Rizal Ave, Quezon City, Philippines\nPhone: 09181234567', '2026-01-01 16:51:13', '2026-01-01 16:51:13'),
+(12, 2, 1260.00, 'processing', NULL, '456 Rizal Ave, Quezon City, Philippines\nPhone: 09181234567', '2026-01-01 16:57:13', '2026-01-01 16:57:13'),
+(13, 2, 85.00, 'processing', NULL, '456 Rizal Ave, Quezon City, Philippinesss\nPhone: 09181234567', '2026-01-01 17:18:56', '2026-01-01 17:18:56'),
+(14, 6, 299.00, 'processing', NULL, 'Doon sa malayo\nPhone: 09998558975', '2026-01-01 17:36:38', '2026-01-01 17:36:38'),
+(15, 2, 750.00, 'pending', 'qweqwe', '456 Rizal Ave, Quezon City, Philippinesss\nPhone: 09181234567', '2026-01-01 17:47:38', '2026-01-02 13:48:08'),
+(16, 2, 2350.00, 'completed', NULL, '123 Main St, Metro Manila, Philippines\nPhone: 09181234567', '2025-12-27 19:23:07', '2025-12-27 19:23:07'),
+(17, 3, 300.00, 'shipped', NULL, '456 Oak Avenue, Cebu City, Philippines\nPhone: 09191234567', '2025-12-29 19:23:07', '2025-12-29 19:23:07'),
+(18, 4, 1130.00, 'processing', NULL, '789 Pine Road, Davao City, Philippines\nPhone: 09201234567', '2025-12-31 19:23:07', '2025-12-31 19:23:07'),
+(19, 5, 545.00, 'cancelled', 'eme', '101 Maple Drive, Baguio City, Philippines\nPhone: 09211234567', '2026-01-01 19:23:07', '2026-01-02 13:34:47'),
+(20, 6, 750.00, 'cancelled', 'gaga', '222 Palm Court, Iloilo City, Philippines\nPhone: 09998558975', '2025-12-25 19:23:07', '2026-01-02 13:54:48'),
+(21, 2, 150.50, 'completed', NULL, '123 Sample St, City A', '2026-01-01 10:00:00', '2026-01-01 10:00:00'),
+(22, 3, 899.00, 'completed', NULL, '456 Sample Ave, City B', '2025-12-28 14:30:00', '2025-12-28 14:30:00'),
+(23, 4, 450.00, 'completed', NULL, '789 Sample Rd, City C', '2025-12-20 11:00:00', '2025-12-20 11:00:00'),
+(24, 5, 1250.75, 'completed', NULL, '101 Sample Blvd, City D', '2025-12-20 18:45:00', '2025-12-20 18:45:00'),
+(25, 2, 320.00, 'completed', NULL, '123 Sample St, City A', '2025-12-05 09:15:00', '2025-12-05 09:15:00'),
+(26, 6, 2100.00, 'completed', NULL, '333 Sample Way, City E', '2025-11-25 16:00:00', '2025-11-25 16:00:00'),
+(27, 3, 180.25, 'completed', NULL, '456 Sample Ave, City B', '2025-11-08 20:00:00', '2025-11-08 20:00:00'),
+(28, 4, 55.50, 'completed', NULL, '789 Sample Rd, City C', '2025-10-30 12:00:00', '2025-10-30 12:00:00'),
+(29, 5, 95.00, 'completed', NULL, '101 Sample Blvd, City D', '2025-10-15 13:10:00', '2025-10-15 13:10:00'),
+(30, 6, 1340.00, 'completed', NULL, '333 Sample Way, City E', '2025-10-02 22:05:00', '2025-10-02 22:05:00');
 
 -- --------------------------------------------------------
 
@@ -281,7 +306,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `price`, `stock`, `category
 (37, 'Sunscreen SPF 50 - 100ml', 'Broad-spectrum sun protection. Water-resistant formula.', 320.00, 70, 8, '/static/images/sunscreen.png', '2026-01-01 13:17:24', '2026-01-01 16:50:05'),
 (38, 'Antifungal Cream 30g', 'Effective treatment for athletes foot, ringworm, and fungal infections.', 175.00, 60, 8, '/static/images/antifungal-cream.png', '2026-01-01 13:17:24', '2026-01-01 16:50:05'),
 (39, 'Wound Healing Ointment 50g', 'Promotes faster healing for cuts, burns, and minor wounds.', 250.00, 75, 8, '/static/images/wound-ointment.png', '2026-01-01 13:17:24', '2026-01-01 16:50:05'),
-(40, 'Aloe Vera Gel 250ml', 'Pure aloe vera gel for sunburn relief and skin hydration.', 180.00, 100, 8, '/static/images/aloe-vera.png', '2026-01-01 13:17:24', '2026-01-01 16:50:05');
+(40, 'Aloe Vera Gel 250ml', 'Pure aloe vera gel for sunburn relief and skin hydration.', 12.30, 21, 8, '/static/images/aloe-vera.png', '2026-01-01 13:17:24', '2026-01-02 12:24:31');
 
 -- --------------------------------------------------------
 
@@ -295,6 +320,7 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `passwordhash` varchar(255) NOT NULL,
   `role` enum('admin','customer') DEFAULT 'customer',
+  `status` enum('active','deactivated') NOT NULL DEFAULT 'active',
   `phone` varchar(20) DEFAULT NULL,
   `address` text DEFAULT NULL,
   `createdat` datetime DEFAULT current_timestamp(),
@@ -305,13 +331,16 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `passwordhash`, `role`, `phone`, `address`, `createdat`, `updatedat`) VALUES
-(1, 'Admin User', 'admin@healthcare.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'admin', '09171234567', '123 Admin Street, Manila, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
-(2, 'Juan Dela Cruz', 'juan@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', '09181234567', '456 Rizal Ave, Quezon City, Philippinesss', '2026-01-01 13:17:24', '2026-01-01 16:58:29'),
-(3, 'Maria Santos', 'maria@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', '09191234567', '789 Mabini St, Makati, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
-(4, 'Pedro Reyes', 'pedro@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', '09201234567', '321 Bonifacio Blvd, Taguig, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
-(5, 'Ana Garcia', 'ana@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', '09211234567', '654 Luna St, Pasig, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
-(6, 'Angela Kimmy', 'angela@gmail.com', '$2b$12$3peW9fTmDSq9Vr7U1LEeQuQVbSWXEI84UQHnR9aNcgZ49/QTj/Bua', 'customer', '09998558975', 'Doon sa malayo', '2026-01-01 17:36:11', '2026-01-01 17:36:11');
+INSERT INTO `users` (`id`, `name`, `email`, `passwordhash`, `role`, `status`, `phone`, `address`, `createdat`, `updatedat`) VALUES
+(1, 'Admin User', 'admin@healthcare.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'admin', 'active', '09171234567', '123 Admin Street, Manila, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
+(2, 'Juan Dela Cruz', 'juan@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', 'active', '09181234562', '456 Rizal Ave, Quezon City, Philippinesss', '2026-01-01 13:17:24', '2026-01-02 09:39:35'),
+(3, 'Maria Santos', 'maria@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', 'active', '09191234567', '789 Mabini St, Makati, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
+(4, 'Pedro Reyes', 'pedro@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', 'active', '09201234567', '321 Bonifacio Blvd, Taguig, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
+(5, 'Ana Garcia', 'ana@email.com', '$2b$12$/Zj5Ox6qRiWG/dILUvaDaOrtm5nBKiY.bPp1NRFd2PDTxbYlgJMJe', 'customer', 'active', '09211234567', '654 Luna St, Pasig, Philippines', '2026-01-01 13:17:24', '2026-01-01 13:28:25'),
+(6, 'Angela', 'angela@gmail.com', '$2b$12$FEwGd05HwPB0XV3vuzkXHu6o8zD0Ak84956mP3P.DUYbpPZ.aGTJS', 'admin', 'active', '09998558981', 'Doon sa malayo', '2026-01-01 17:36:11', '2026-01-02 14:21:48'),
+(7, 'paolo', 'paolo@gmail.com', '$2b$12$GkVwx5FSr4He/wVx9t6rn.Oc69IRhYmJKNxO5Su3SGle.Eo95c5xW', 'admin', 'active', '', '', '2026-01-02 14:23:55', '2026-01-02 14:26:49'),
+(8, 'eme', 'eme@g.com', '$2b$12$Gaz0oj/giykAsOZPiECFwOzvpJO2vJxf2ShdRu7lQPH9OWd10qrzO', 'customer', 'active', '', '', '2026-01-02 14:36:27', '2026-01-02 14:42:04'),
+(9, 'paps', 'paps@g.com', '$2b$12$XYWKYi1o9K2DyPVjw1GCAehhmOZm7vbEAXFvTNqSnaWao4M0TtRv.', 'admin', 'active', '', '', '2026-01-02 14:40:06', '2026-01-02 14:40:44');
 
 -- --------------------------------------------------------
 
@@ -430,13 +459,13 @@ ALTER TABLE `cartitems`
 -- AUTO_INCREMENT for table `carts`
 --
 ALTER TABLE `carts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
@@ -454,13 +483,13 @@ ALTER TABLE `notifications`
 -- AUTO_INCREMENT for table `orderitems`
 --
 ALTER TABLE `orderitems`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -472,13 +501,13 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `wishlist`
