@@ -78,7 +78,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Order ID</th>
+                        <!-- <th>Order ID</th> -->
                         <th>Customer</th>
                         <th>
                             <a href="{{ url_for('admin_orders', status=current_status, sort_by='amount', order='asc' if current_sort_by == 'amount' and current_sort_order == 'desc' else 'desc') }}">
@@ -97,7 +97,7 @@
                 <tbody>
                     {% for order in orders %}
                     <tr>
-                        <td>#{{ order.id }}</td>
+                        <!-- <td>#{{ order.id }}</td> -->
                         <td>{{ order.customer_name }}</td>
                         <td>P{{ "{:,.2f}".format(order.totalamount) }}</td>
                         <td><span class="status status-{{ order.status }}">{{ order.status }}</span></td>
