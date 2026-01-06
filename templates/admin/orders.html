@@ -210,14 +210,34 @@
 
             statusForm.action = `/admin/orders/update_status/${orderId}`;
             modalOrderId.textContent = orderId;
-            statusSelect.value = currentStatus;
-            
+
             // Populate the reason field
             if (reasonInput) {
                 reasonInput.value = reason || '';
             }
+
+            // Allowed transitions mirror server-side rules
+            const allowed = {
+                'pending': ['processing', 'cancelled'],
+                'processing': ['shipped', 'cancelled'],
+                'shipped': ['completed'],
+                'completed': [],
+                'cancelled': []
+            };
+
+            // Enable/disable options based on current status
+            Array.from(statusSelect.options).forEach(opt => {
+                if (opt.value === currentStatus) {
+                    opt.disabled = false;
+                } else {
+                    opt.disabled = !allowed[currentStatus] || !allowed[currentStatus].includes(opt.value);
+                }
+            });
+
+            // Set value after disabling/enabling
+            statusSelect.value = currentStatus;
             
-            // Check status immediately when opening
+            // Populate the reason field visibility
             toggleCancellationReason();
             
             modal.style.display = 'flex';

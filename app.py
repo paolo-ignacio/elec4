@@ -1818,26 +1818,57 @@ def order_details(order_id):
 def update_order_status(order_id):
     form = AdminOrderStatusForm()
     
+    # Allowed next states mapping
+    allowed_transitions = {
+        'pending': ['processing', 'cancelled'],
+        'processing': ['shipped', 'cancelled'],
+        'shipped': ['completed'],
+        'completed': [],
+        'cancelled': []
+    }
+
+    # Validate form first (CSRF + basic WTForms checks)
     if form.validate_on_submit():
-        status = form.status.data
+        new_status = form.status.data
         reason = form.reason.data.strip() if form.reason.data else None
-        
-        # Custom validation for cancellation reason
-        if status == 'cancelled' and not reason:
+
+        cur = mysql.connection.cursor(DictCursor)
+        cur.execute("SELECT status FROM orders WHERE id = %s", (order_id,))
+        row = cur.fetchone()
+        if not row:
+            cur.close()
+            return jsonify({'success': False, 'errors': {'order': ['Order not found']}}), 404
+
+        current_status = row['status']
+
+        # No-op if same status
+        if new_status == current_status:
+            cur.close()
+            return jsonify({'success': True, 'message': 'No change'}), 200
+
+        # Check allowed transition
+        allowed_next = allowed_transitions.get(current_status, [])
+        if new_status not in allowed_next:
+            cur.close()
+            return jsonify({
+                'success': False,
+                'errors': {'status': [f"Invalid transition from '{current_status}' to '{new_status}'. Allowed: {', '.join(allowed_next) or 'none'}"]}
+            }), 400
+
+        # If cancelling, require reason
+        if new_status == 'cancelled' and not reason:
+            cur.close()
             return jsonify({'success': False, 'errors': {'reason': ['Reason is required when cancelling an order.']}}), 400
 
-        cur = mysql.connection.cursor()
-        
-        if status == 'cancelled':
-            cur.execute("UPDATE orders SET status = %s, cancellation_reason = %s WHERE id = %s", (status, reason, order_id))
+        # Perform update
+        if new_status == 'cancelled':
+            cur.execute("UPDATE orders SET status = %s, cancellation_reason = %s WHERE id = %s", (new_status, reason, order_id))
         else:
-            # If status is changed from cancelled to something else, you might want to clear the reason, or keep it history.
-            # Here we just update status.
-            cur.execute("UPDATE orders SET status = %s WHERE id = %s", (status, order_id))
-            
+            cur.execute("UPDATE orders SET status = %s WHERE id = %s", (new_status, order_id))
+
         mysql.connection.commit()
         cur.close()
-        
+
         flash("Order status updated successfully.", "success")
         return jsonify({'success': True})
     
