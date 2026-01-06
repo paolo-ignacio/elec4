@@ -1328,14 +1328,14 @@ def login():
         user = cur.fetchone()
         cur.close()
 
-        if user and bcrypt.checkpw(
-            form.password.data.encode("utf-8"), user["passwordhash"].encode("utf-8")
-        ):
+        if user and bcrypt.checkpw(form.password.data.encode("utf-8"), user["passwordhash"].encode("utf-8")):
+            # Check account status
+            if user.get("status") != "active":
+                flash("Account is deactivated. Contact administrator.", "error")
+                return redirect(url_for("index"))
+
             # Set session as permanent if remember me is checked
-            if form.remember_me.data:
-                session.permanent = True
-            else:
-                session.permanent = False
+            session.permanent = bool(form.remember_me.data)
 
             session["user_id"] = user["id"]
             session["user_name"] = user["name"]
@@ -1344,7 +1344,12 @@ def login():
             session["user_phone"] = user.get("phone", "")
             session["user_address"] = user.get("address", "")
             flash(f"Welcome back, {user['name']}!", "success")
-            return redirect(url_for("shop"))
+
+            # Redirect admins to dashboard, customers to shop
+            if user.get("role") == "admin":
+                return redirect(url_for("dashboard"))
+            else:
+                return redirect(url_for("shop"))
         else:
             flash("Invalid email or password.", "error")
 
@@ -1411,14 +1416,13 @@ def logout():
 
 # ADMIN LOGIN
 
-
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # 1. Check if user is logged in
+        # 1. Check if user is logged in — redirect to the main index/login page
         if "user_id" not in session:
             flash("Please login to access the admin panel.", "error")
-            return redirect(url_for("admin_login"))
+            return redirect(url_for("index"))
         
         # 2. Check if user has admin role
         if session.get("user_role") != "admin":
@@ -1430,37 +1434,8 @@ def admin_required(f):
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    # If already logged in as admin, redirect to dashboard
-    if 'user_id' in session and session.get('user_role') == 'admin':
-        return redirect(url_for('dashboard'))
 
-    form = AdminLoginForm()
-    
-    if form.validate_on_submit():
-        cur = mysql.connection.cursor(DictCursor)
-        cur.execute("SELECT * FROM users WHERE email = %s", (form.email.data,))
-        user = cur.fetchone()
-        cur.close()
-
-        # Verify password AND check if role is admin
-        if user and bcrypt.checkpw(form.password.data.encode("utf-8"), user["passwordhash"].encode("utf-8")):
-            if user['role'] == 'admin':
-                # Set session
-                session.permanent = True
-                session["user_id"] = user["id"]
-                session["user_name"] = user["name"]
-                session["user_email"] = user["email"]
-                session["user_role"] = user["role"]
-                
-                flash(f"Welcome back, {user['name']}!", "success")
-                return redirect(url_for("dashboard"))
-            else:
-                flash("Access denied. You do not have admin privileges.", "error")
-        else:
-            flash("Invalid email or password.", "error")
-
-    return render_template('admin/login.html', form=form)
-
+    return redirect(url_for('index'))
 
 # ADMIN
 # DASHBOARD
