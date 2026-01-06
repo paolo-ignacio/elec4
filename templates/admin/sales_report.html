@@ -93,7 +93,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Order ID</th>
+                        <!-- <th>Order ID</th> -->
                         <th>Customer</th>
                         <th>Total Amount</th>
                         <th>Status</th>
@@ -103,7 +103,7 @@
                 <tbody>
                     {% for order in orders %}
                     <tr>
-                        <td>#{{ order.id }}</td>
+                        <!-- <td>#{{ order.id }}</td> -->
                         <td>{{ order.customer_name }}</td>
                         <td>P{{ "{:,.2f}".format(order.totalamount) }}</td>
                         <td><span class="status status-completed">Completed</span></td>
