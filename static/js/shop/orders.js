@@ -5,6 +5,7 @@
 let allOrders = [];
 let currentOrderFilter = 'all';
 let currentOrderSearch = '';
+let currentViewingOrder = null;
 
 function initOrders() {
     const myOrdersLink = document.querySelector('.profile-menu-item[href="#"]:nth-child(2)');
@@ -12,6 +13,7 @@ function initOrders() {
     const closeOrdersBtn = document.getElementById('closeOrders');
     const ordersOverlay = document.getElementById('ordersOverlay');
     const ordersSearch = document.getElementById('ordersSearch');
+    const backToOrdersBtn = document.getElementById('backToOrders');
 
     // Find the "My Orders" link more reliably
     document.querySelectorAll('.profile-menu-item').forEach(item => {
@@ -38,12 +40,17 @@ function initOrders() {
         ordersOverlay.addEventListener('click', closeOrders);
     }
 
+    // Back button for order detail view
+    if (backToOrdersBtn) {
+        backToOrdersBtn.addEventListener('click', showOrdersList);
+    }
+
     // Status tabs
     document.querySelectorAll('.orders-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.orders-tab').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
-            currentOrderFilter = this.dataset.status;
+            currentOrderFilter = this.dataset.status.toLowerCase();
             filterAndRenderOrders();
         });
     });
@@ -60,9 +67,16 @@ function initOrders() {
 async function openOrders() {
     const ordersModal = document.getElementById('ordersModal');
     const ordersList = document.getElementById('ordersList');
+    const ordersListView = document.getElementById('ordersListView');
+    const orderDetailView = document.getElementById('orderDetailView');
 
     ordersModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    // Always show list view when opening
+    if (ordersListView) ordersListView.style.display = 'block';
+    if (orderDetailView) orderDetailView.style.display = 'none';
+    currentViewingOrder = null;
 
     // Reset filters
     currentOrderFilter = 'all';
@@ -108,7 +122,7 @@ function updateOrderCounts() {
     };
 
     allOrders.forEach(order => {
-        const status = order.status.toLowerCase();
+        const status = (order.status || '').toLowerCase().trim();
         if (counts.hasOwnProperty(status)) {
             counts[status]++;
         }
@@ -122,13 +136,15 @@ function updateOrderCounts() {
     document.getElementById('countCompleted').textContent = counts.completed;
     document.getElementById('countCancelled').textContent = counts.cancelled;
 
-    // Hide tabs with zero count (except All)
+    // Show all tabs but disable those with zero count (except All)
     document.querySelectorAll('.orders-tab').forEach(tab => {
-        const status = tab.dataset.status;
+        const status = tab.dataset.status.toLowerCase();
         if (status !== 'all' && counts[status] === 0) {
-            tab.style.display = 'none';
+            tab.style.opacity = '0.5';
+            tab.style.pointerEvents = 'none';
         } else {
-            tab.style.display = 'flex';
+            tab.style.opacity = '1';
+            tab.style.pointerEvents = 'auto';
         }
     });
 }
@@ -136,9 +152,12 @@ function updateOrderCounts() {
 function filterAndRenderOrders() {
     let filtered = [...allOrders];
 
-    // Filter by status
+    // Filter by status (normalize both values for comparison)
     if (currentOrderFilter !== 'all') {
-        filtered = filtered.filter(order => order.status.toLowerCase() === currentOrderFilter);
+        filtered = filtered.filter(order => {
+            const orderStatus = (order.status || '').toLowerCase().trim();
+            return orderStatus === currentOrderFilter.toLowerCase().trim();
+        });
     }
 
     // Filter by search
@@ -209,7 +228,7 @@ function renderOrders(orders) {
     };
 
     ordersList.innerHTML = orders.map(order => {
-        const status = order.status.toLowerCase();
+        const status = (order.status || '').toLowerCase().trim();
         const statusColor = statusColors[status] || '#6b7280';
         const statusIcon = statusIcons[status] || '';
         const date = new Date(order.createdat).toLocaleDateString('en-PH', {
@@ -228,30 +247,39 @@ function renderOrders(orders) {
                     </div>
                     <span class="order-status status-${status}" style="--status-color: ${statusColor}">
                         ${statusIcon}
-                        ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        ${status.charAt(0).toUpperCase() + status.slice(1)}
                     </span>
                 </div>
                 <div class="order-items">
-                    ${order.items.slice(0, 3).map(item => `
+                    ${order.items.slice(0, 2).map(item => `
                         <div class="order-item-mini">
                             <img src="${item.imagepath || 'https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM='}" alt="${item.name}">
                             <div class="order-item-info">
                                 <span class="item-name">${item.name}</span>
-                                <span class="item-details">₱${item.price.toFixed(2)} x ${item.quantity}</span>
+                                <span class="item-details">₱${parseFloat(item.price).toFixed(2)} x ${item.quantity}</span>
                             </div>
                         </div>
                     `).join('')}
-                    ${order.items.length > 3 ? `<div class="more-items">+${order.items.length - 3} more item${order.items.length - 3 > 1 ? 's' : ''}</div>` : ''}
+                    ${order.items.length > 2 ? `<div class="more-items">+${order.items.length - 2} more item${order.items.length - 2 > 1 ? 's' : ''}</div>` : ''}
                 </div>
                 <div class="order-footer">
                     <div class="order-payment">
                         <span class="payment-method-badge">${formatPaymentMethod(order.payment_method)}</span>
-                        <span class="payment-status-badge ${order.payment_status}">${formatPaymentStatus(order.payment_status)}</span>
+                        <span class="payment-status-badge ${order.payment_status || 'pending'}">${formatPaymentStatus(order.payment_status)}</span>
                     </div>
-                    <div class="order-total-section">
-                        <span class="total-label">${order.items.length} item${order.items.length > 1 ? 's' : ''}</span>
-                        <span class="order-total">₱${order.totalamount.toFixed(2)}</span>
+                    <div class="order-actions">
+                        <button class="view-order-btn" onclick="viewOrderDetail(${order.id})">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            View Order
+                        </button>
                     </div>
+                </div>
+                <div class="order-total-row">
+                    <span class="total-label">${order.items.length} item${order.items.length > 1 ? 's' : ''}</span>
+                    <span class="order-total">₱${parseFloat(order.totalamount).toFixed(2)}</span>
                 </div>
             </div>
         `;
@@ -259,22 +287,203 @@ function renderOrders(orders) {
 }
 
 function formatPaymentMethod(method) {
+    if (!method) return 'N/A';
+    const methodLower = method.toLowerCase();
     const methods = {
         'cod': 'Cash on Delivery',
+        'cash on delivery': 'Cash on Delivery',
         'gcash': 'GCash',
         'maya': 'Maya',
+        'paypal': 'PayPal',
         'card': 'Card',
-        'bank_transfer': 'Bank Transfer'
+        'credit card': 'Credit Card',
+        'debit card': 'Debit Card',
+        'bank_transfer': 'Bank Transfer',
+        'bank transfer': 'Bank Transfer'
     };
-    return methods[method] || method || 'N/A';
+    return methods[methodLower] || method;
 }
 
 function formatPaymentStatus(status) {
+    if (!status) return 'Pending';
+    const statusLower = status.toLowerCase();
     const statuses = {
-        'pending': 'Payment Pending',
+        'pending': 'Pending',
+        'pending_verification': 'Verifying',
         'paid': 'Paid',
         'failed': 'Failed',
         'refunded': 'Refunded'
     };
-    return statuses[status] || status || 'Pending';
+    return statuses[statusLower] || status;
+}
+
+// View Order Detail Functions
+function viewOrderDetail(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) {
+        showToast('Order not found', 'error');
+        return;
+    }
+    currentViewingOrder = order;
+    showOrderDetail(order);
+}
+
+function showOrderDetail(order) {
+    const ordersListView = document.getElementById('ordersListView');
+    const orderDetailView = document.getElementById('orderDetailView');
+    const orderDetailContent = document.getElementById('orderDetailContent');
+
+    if (!ordersListView || !orderDetailView || !orderDetailContent) return;
+
+    const status = (order.status || '').toLowerCase().trim();
+    const statusColors = {
+        'pending': '#f59e0b',
+        'processing': '#3b82f6',
+        'shipped': '#8b5cf6',
+        'completed': '#059669',
+        'cancelled': '#ef4444'
+    };
+    const statusColor = statusColors[status] || '#6b7280';
+
+    const date = new Date(order.createdat).toLocaleDateString('en-PH', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+    const time = new Date(order.createdat).toLocaleTimeString('en-PH', {
+        hour: '2-digit', minute: '2-digit'
+    });
+
+    // Calculate subtotal
+    const subtotal = order.items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+
+    orderDetailContent.innerHTML = `
+        <div class="order-detail-header">
+            <div class="order-detail-title">
+                <h3>Order #${String(order.id).padStart(6, '0')}</h3>
+                <span class="order-status status-${status}" style="--status-color: ${statusColor}">
+                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+            </div>
+            <p class="order-detail-date">${date} at ${time}</p>
+        </div>
+
+        <div class="order-detail-section">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                    <path d="M3 6h18"></path>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                Order Items (${order.items.length})
+            </h4>
+            <div class="order-detail-items">
+                ${order.items.map(item => `
+                    <div class="order-detail-item">
+                        <img src="${item.imagepath || 'https://media.istockphoto.com/id/1147544807/vector/thumbnail-image-vector-graphic.jpg?s=612x612&w=0&k=20&c=rnCKVbdxqkjlcs3xH87-9gocETqpspHFXu5dIGB4wuM='}" alt="${item.name}">
+                        <div class="order-detail-item-info">
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-qty">Qty: ${item.quantity}</span>
+                        </div>
+                        <div class="order-detail-item-price">
+                            <span class="unit-price">₱${parseFloat(item.price).toFixed(2)} each</span>
+                            <span class="line-total">₱${(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <div class="order-detail-section">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+                Payment Information
+            </h4>
+            <div class="order-detail-info-grid">
+                <div class="info-row">
+                    <span class="info-label">Payment Method</span>
+                    <span class="info-value">${formatPaymentMethod(order.payment_method)}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Payment Status</span>
+                    <span class="payment-status-badge ${order.payment_status || 'pending'}">${formatPaymentStatus(order.payment_status)}</span>
+                </div>
+                ${order.reference_no ? `
+                <div class="info-row">
+                    <span class="info-label">Reference No.</span>
+                    <span class="info-value reference-no">${order.reference_no}</span>
+                </div>
+                ` : ''}
+            </div>
+            ${order.proof_image ? `
+            <div class="payment-proof-section">
+                <span class="info-label">Payment Proof</span>
+                <div class="payment-proof-image">
+                    <img src="/static/${order.proof_image}" alt="Payment Proof" onclick="openImageModal(this.src)">
+                    <span class="view-hint">Click to enlarge</span>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+
+        <div class="order-detail-section">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                Shipping Address
+            </h4>
+            <div class="shipping-address-box">
+                <p>${order.shippingaddress || 'No shipping address provided'}</p>
+            </div>
+        </div>
+
+        <div class="order-detail-summary">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>₱${subtotal.toFixed(2)}</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span class="free-shipping">Free</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span>₱${parseFloat(order.totalamount).toFixed(2)}</span>
+            </div>
+        </div>
+    `;
+
+    // Hide list view, show detail view
+    ordersListView.style.display = 'none';
+    orderDetailView.style.display = 'block';
+}
+
+function showOrdersList() {
+    const ordersListView = document.getElementById('ordersListView');
+    const orderDetailView = document.getElementById('orderDetailView');
+
+    if (ordersListView) ordersListView.style.display = 'block';
+    if (orderDetailView) orderDetailView.style.display = 'none';
+    currentViewingOrder = null;
+}
+
+function openImageModal(src) {
+    // Create a simple image modal
+    const modal = document.createElement('div');
+    modal.className = 'image-modal-overlay';
+    modal.innerHTML = `
+        <div class="image-modal-content">
+            <button class="image-modal-close">&times;</button>
+            <img src="${src}" alt="Payment Proof">
+        </div>
+    `;
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal || e.target.classList.contains('image-modal-close')) {
+            modal.remove();
+        }
+    });
+    document.body.appendChild(modal);
 }
