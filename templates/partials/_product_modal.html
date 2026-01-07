@@ -1,0 +1,58 @@
+<!-- Product Detail Modal Partial -->
+<div class="product-modal" id="productModal">
+    <div class="product-modal-overlay" id="productModalOverlay"></div>
+    <div class="product-modal-content">
+        <button class="product-modal-close" id="closeProductModal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <div class="product-modal-body">
+            <div class="product-modal-image">
+                <img id="modalProductImage" src="" alt="Product">
+                <span class="product-modal-badge" id="modalProductBadge"></span>
+            </div>
+            <div class="product-modal-details">
+                <span class="product-modal-category" id="modalProductCategory"></span>
+                <h2 class="product-modal-title" id="modalProductTitle"></h2>
+                <p class="product-modal-desc" id="modalProductDesc"></p>
+                <div class="product-modal-price-row">
+                    <span class="product-modal-price" id="modalProductPrice"></span>
+                    <span class="product-modal-stock" id="modalProductStock"></span>
+                </div>
+                <div class="product-modal-quantity">
+                    <label>Quantity:</label>
+                    <div class="quantity-selector">
+                        <button class="qty-btn" id="modalQtyMinus">-</button>
+                        <input type="number" id="modalQty" value="1" min="1" max="99">
+                        <button class="qty-btn" id="modalQtyPlus">+</button>
+                    </div>
+                </div>
+                <div class="product-modal-actions">
+                    <button class="btn btn-primary btn-lg" id="modalAddToCart">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        Add to Cart
+                    </button>
+                    <button class="btn btn-checkout btn-lg" id="modalCheckout">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                            <path d="M3 6h18"></path>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        Checkout
+                    </button>
+                    <button class="btn btn-outline btn-lg" id="modalWishlist">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
