@@ -1459,43 +1459,81 @@ def dashboard():
     cur.execute("SELECT COUNT(id) as total_products FROM products")
     total_products = cur.fetchone()['total_products'] or 0
 
-    # Sales Report Data
+    # Sales Report Data - Generate labels and data in Python
+    from datetime import datetime as dt, timedelta
+    import calendar
+
+    today = dt.now()
+    chart_labels = []
+    chart_data = []
+    total_orders_count = 0
+
     if period == 'daily':
-        sales_query = """
-            SELECT 
-                DATE_FORMAT(createdat, '%%Y-%%m-%%d') as date_period, 
-                COUNT(id) as order_count, 
-                SUM(totalamount) as total_sales
-            FROM orders 
-            WHERE createdat >= CURDATE() - INTERVAL 30 DAY AND status = 'completed'
-            GROUP BY date_period 
-            ORDER BY date_period ASC
-        """
+        # Daily: Show Mon-Sun for current week
+        # Get the start of the current week (Monday)
+        start_of_week = today - timedelta(days=today.weekday())
+        chart_labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+        for i in range(7):
+            day_date = start_of_week + timedelta(days=i)
+            cur.execute("""
+                SELECT COUNT(id) as order_count, COALESCE(SUM(totalamount), 0) as total_sales
+                FROM orders
+                WHERE DATE(createdat) = %s AND status = 'completed'
+            """, (day_date.strftime('%Y-%m-%d'),))
+            result = cur.fetchone()
+            chart_data.append(float(result['total_sales'] or 0))
+            total_orders_count += int(result['order_count'] or 0)
+
     elif period == 'weekly':
-        sales_query = """
-            SELECT 
-                DATE_FORMAT(createdat, '%%x-Week %%v') as date_period, 
-                COUNT(id) as order_count, 
-                SUM(totalamount) as total_sales
-            FROM orders 
-            WHERE createdat >= CURDATE() - INTERVAL 12 WEEK AND status = 'completed'
-            GROUP BY date_period 
-            ORDER BY MIN(createdat) ASC
-        """
+        # Weekly: Show Week 1-4 of current month
+        first_day_of_month = today.replace(day=1)
+
+        for week_num in range(1, 5):
+            week_start = first_day_of_month + timedelta(weeks=week_num-1)
+            week_end = week_start + timedelta(days=6)
+            # Don't go beyond current month
+            if week_start.month != today.month:
+                break
+            if week_end.month != today.month:
+                week_end = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+            chart_labels.append(f'Week {week_num}')
+            cur.execute("""
+                SELECT COUNT(id) as order_count, COALESCE(SUM(totalamount), 0) as total_sales
+                FROM orders
+                WHERE DATE(createdat) BETWEEN %s AND %s AND status = 'completed'
+            """, (week_start.strftime('%Y-%m-%d'), week_end.strftime('%Y-%m-%d')))
+            result = cur.fetchone()
+            chart_data.append(float(result['total_sales'] or 0))
+            total_orders_count += int(result['order_count'] or 0)
+
     else:  # monthly
-        sales_query = """
-            SELECT 
-                DATE_FORMAT(createdat, '%%b %%Y') as date_period, 
-                COUNT(id) as order_count, 
-                SUM(totalamount) as total_sales
-            FROM orders 
-            WHERE createdat >= CURDATE() - INTERVAL 12 MONTH AND status = 'completed'
-            GROUP BY date_period 
-            ORDER BY MIN(createdat) ASC
-        """
-    
-    cur.execute(sales_query)
-    sales_report_data = cur.fetchall()
+        # Monthly: Show Jan-Dec for current year
+        chart_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+        for month in range(1, 13):
+            cur.execute("""
+                SELECT COUNT(id) as order_count, COALESCE(SUM(totalamount), 0) as total_sales
+                FROM orders
+                WHERE MONTH(createdat) = %s AND YEAR(createdat) = %s AND status = 'completed'
+            """, (month, today.year))
+            result = cur.fetchone()
+            chart_data.append(float(result['total_sales'] or 0))
+            total_orders_count += int(result['order_count'] or 0)
+
+    # Calculate summary
+    total_sales_sum = sum(chart_data)
+    non_zero_count = len([x for x in chart_data if x > 0])
+    avg_sales = total_sales_sum / non_zero_count if non_zero_count > 0 else 0
+
+    sales_report_data = {
+        'labels': chart_labels,
+        'data': chart_data,
+        'total_sales': total_sales_sum,
+        'avg_sales': avg_sales,
+        'total_orders': total_orders_count
+    }
 
     # Recent Orders
     cur.execute("""
@@ -1531,7 +1569,15 @@ def dashboard():
         'sales_report_data': sales_report_data
     }
 
-    return render_template("admin/dashboard.html", data=dashboard_data, active_page='dashboard', period=period)
+    # Period info for display
+    from datetime import datetime as dt
+    now = dt.now()
+    period_info = {
+        'current_month': now.strftime('%B %Y'),
+        'current_year': now.strftime('%Y')
+    }
+
+    return render_template("admin/dashboard.html", data=dashboard_data, active_page='dashboard', period=period, period_info=period_info)
 
 @app.route('/products')
 @admin_required

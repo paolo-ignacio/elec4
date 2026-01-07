@@ -1,0 +1,61 @@
+<!-- Orders Modal Partial -->
+<div class="orders-modal" id="ordersModal">
+    <div class="orders-modal-overlay" id="ordersOverlay"></div>
+    <div class="orders-modal-content">
+        <div class="orders-modal-header">
+            <h2>My Orders</h2>
+            <button class="orders-close-btn" id="closeOrders">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Orders Search Bar -->
+        <div class="orders-search-bar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="ordersSearch" placeholder="Search by order ID or product name...">
+        </div>
+
+        <!-- Orders Status Tabs -->
+        <div class="orders-tabs">
+            <button class="orders-tab active" data-status="all">
+                All
+                <span class="tab-count" id="countAll">0</span>
+            </button>
+            <button class="orders-tab" data-status="pending">
+                <span class="status-dot pending"></span>
+                Pending
+                <span class="tab-count" id="countPending">0</span>
+            </button>
+            <button class="orders-tab" data-status="processing">
+                <span class="status-dot processing"></span>
+                Processing
+                <span class="tab-count" id="countProcessing">0</span>
+            </button>
+            <button class="orders-tab" data-status="shipped">
+                <span class="status-dot shipped"></span>
+                Shipped
+                <span class="tab-count" id="countShipped">0</span>
+            </button>
+            <button class="orders-tab" data-status="completed">
+                <span class="status-dot completed"></span>
+                Completed
+                <span class="tab-count" id="countCompleted">0</span>
+            </button>
+            <button class="orders-tab" data-status="cancelled">
+                <span class="status-dot cancelled"></span>
+                Cancelled
+                <span class="tab-count" id="countCancelled">0</span>
+            </button>
+        </div>
+
+        <div class="orders-modal-body" id="ordersList">
+            <!-- Orders will be loaded here -->
+        </div>
+    </div>
+</div>

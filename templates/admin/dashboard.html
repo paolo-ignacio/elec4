@@ -65,9 +65,24 @@
         .list li strong { font-weight: 600; color: var(--text-dark); }
 
         /* Report Header */
-        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .report-filters .btn { background: none; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: var(--radius-md); cursor: pointer; text-decoration: none; color: var(--text-muted); font-size: 0.9em; }
-        .report-filters .btn.active { background-color: var(--primary-light); color: var(--primary-color); border-color: var(--primary-color); font-weight: 600; }
+        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .report-header-left { display: flex; flex-direction: column; gap: 4px; }
+        .report-header-left h2 { margin: 0; }
+        .report-period-info { font-size: 0.85em; color: var(--text-muted, #6c757d); font-weight: 400; }
+        .report-filters { display: flex; gap: 8px; }
+        .report-filters .btn { background: none; border: 1px solid var(--border-color, #e5e7eb); padding: 8px 16px; border-radius: var(--radius-md, 6px); cursor: pointer; text-decoration: none; color: var(--text-muted, #6c757d); font-size: 0.9em; transition: all 0.2s ease; }
+        .report-filters .btn:hover { background-color: var(--bg-light, #f8f9fa); border-color: #d1d5db; }
+        .report-filters .btn.active { background-color: #ecfdf5; color: #059669; border-color: #10b981; font-weight: 600; }
+
+        /* Chart Summary */
+        .chart-summary { display: flex; gap: 30px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+        .chart-summary-item { display: flex; flex-direction: column; gap: 2px; }
+        .chart-summary-label { font-size: 0.75em; color: var(--text-muted, #6c757d); text-transform: uppercase; letter-spacing: 0.5px; }
+        .chart-summary-value { font-size: 1.3em; font-weight: 700; color: var(--text-dark, #111827); }
+        .chart-summary-value.positive { color: #059669; }
+
+        /* Chart Container */
+        .chart-container { position: relative; height: 280px; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -102,21 +117,41 @@
                 <!-- Sales Report Section -->
                 <div class="grid-item sales-report-container">
                     <div class="report-header">
-                        <h2>Sales Report</h2>
+                        <div class="report-header-left">
+                            <h2>Sales Report</h2>
+                            <span class="report-period-info">
+                                {% if period == 'daily' %}
+                                    Current Week (Mon - Sun)
+                                {% elif period == 'weekly' %}
+                                    {{ period_info.current_month }} (Weeks of the Month)
+                                {% else %}
+                                    Year {{ period_info.current_year }} (Jan - Dec)
+                                {% endif %}
+                            </span>
+                        </div>
                         <div class="report-filters">
                             <a href="{{ url_for('dashboard', period='daily') }}" class="btn {{ 'active' if period == 'daily' else '' }}">Daily</a>
                             <a href="{{ url_for('dashboard', period='weekly') }}" class="btn {{ 'active' if period == 'weekly' else '' }}">Weekly</a>
                             <a href="{{ url_for('dashboard', period='monthly') }}" class="btn {{ 'active' if period == 'monthly' else '' }}">Monthly</a>
                         </div>
                     </div>
-                    <div>
-                        {% if data.sales_report_data %}
-                        <canvas id="salesChart" style="height: 300px;"></canvas>
-                        {% else %}
-                        <div style="text-align: center; padding: 40px; color: #6c757d; height: 300px; display: flex; align-items: center; justify-content: center;">
-                            <p>No sales data available for the selected period.</p>
+                    <!-- Chart Summary -->
+                    <div class="chart-summary">
+                        <div class="chart-summary-item">
+                            <span class="chart-summary-label">Total Sales</span>
+                            <span class="chart-summary-value positive">₱{{ "{:,.2f}".format(data.sales_report_data.total_sales) }}</span>
                         </div>
-                        {% endif %}
+                        <div class="chart-summary-item">
+                            <span class="chart-summary-label">Average</span>
+                            <span class="chart-summary-value">₱{{ "{:,.2f}".format(data.sales_report_data.avg_sales) }}</span>
+                        </div>
+                        <div class="chart-summary-item">
+                            <span class="chart-summary-label">Orders</span>
+                            <span class="chart-summary-value">{{ data.sales_report_data.total_orders }}</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
                     </div>
                 </div>
 
@@ -166,51 +201,67 @@
             </div>
         </main>
     </div>
-        <script>
-
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            const salesData = {{ data.sales_report_data|tojson }};
+            const chartCanvas = document.getElementById('salesChart');
+            if (!chartCanvas) return;
 
-            const labels = salesData.map(d => d.date_period);
-            const sales = salesData.map(d => d.total_sales);
+            const ctx = chartCanvas.getContext('2d');
+
+            // Data from Flask - pure server-side rendering
+            const chartLabels = {{ data.sales_report_data.labels|tojson }};
+            const chartData = {{ data.sales_report_data.data|tojson }};
+
+            // Create gradient for bars
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.3)');
 
             new Chart(ctx, {
-                type: 'bar',  
+                type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: chartLabels,
                     datasets: [{
-                        label: 'Total Sales (₱)',
-                        data: sales,
-                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        label: 'Sales',
+                        data: chartData,
+                        backgroundColor: gradient,
                         borderColor: '#10b981',
                         borderWidth: 1,
                         borderRadius: 6,
-                        maxBarThickness: 40
+                        borderSkipped: false,
+                        maxBarThickness: 50
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
                     scales: {
                         x: {
-                            title: {
-                                display: true,
-                                text: '{{ "Day" if period == "daily" else ("Week" if period == "weekly" else "Month") }}',
-                                color: '#6b7280',
-                                font: { size: 12 }
-                            },
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                font: { size: 12, weight: '500' }
                             }
                         },
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'rgba(148, 163, 184, 0.15)'
+                                color: 'rgba(148, 163, 184, 0.1)',
+                                drawBorder: false
                             },
                             ticks: {
+                                color: '#6b7280',
+                                font: { size: 11 },
                                 callback: function(value) {
+                                    if (value >= 1000) {
+                                        return '₱' + (value / 1000).toFixed(0) + 'k';
+                                    }
                                     return '₱' + value.toLocaleString();
                                 }
                             }
@@ -221,10 +272,16 @@
                             display: false
                         },
                         tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false,
                             callbacks: {
                                 label: function(context) {
                                     let value = context.parsed.y || 0;
-                                    return '₱' + value.toLocaleString(undefined, {
+                                    return 'Sales: ₱' + value.toLocaleString(undefined, {
                                         minimumFractionDigits: 2,
                                         maximumFractionDigits: 2
                                     });
@@ -235,7 +292,6 @@
                 }
             });
         });
-        
     </script>
 </body>
 </html>
