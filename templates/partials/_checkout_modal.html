@@ -68,7 +68,7 @@
                 <h3>Payment Method</h3>
                 <div class="payment-methods">
                     <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="cod" checked>
+                        <input type="radio" name="paymentMethod" value="Cash on Delivery" checked>
                         <div class="payment-option-content">
                             <div class="payment-icon cod-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -84,7 +84,7 @@
                     </label>
 
                     <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="gcash">
+                        <input type="radio" name="paymentMethod" value="GCash">
                         <div class="payment-option-content">
                             <div class="payment-icon gcash-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -99,22 +99,23 @@
                     </label>
 
                     <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="maya">
+                        <input type="radio" name="paymentMethod" value="PayPal">
                         <div class="payment-option-content">
-                            <div class="payment-icon maya-icon">
+                            <div class="payment-icon paypal-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                    <path d="M7 11c-.6 4 1 6.5 5.5 6.5h.5c.6 0 1.1.4 1.2 1l.3 2c.1.5.6.9 1.1.9h2c.3 0 .5-.3.4-.6l-.8-4.6c-.2-1-.9-1.8-2-1.8h-1.5"></path>
+                                    <path d="M6.5 3h5.5c3 0 5.5 1 5.5 4.5 0 4-3 5-5.5 5h-3l-1 6h-3l2-15.5z"></path>
                                 </svg>
                             </div>
                             <div class="payment-info">
-                                <span class="payment-name">Maya</span>
-                                <span class="payment-desc">Pay via Maya e-wallet</span>
+                                <span class="payment-name">PayPal</span>
+                                <span class="payment-desc">Pay via PayPal account</span>
                             </div>
                         </div>
                     </label>
 
                     <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="card">
+                        <input type="radio" name="paymentMethod" value="Credit Card">
                         <div class="payment-option-content">
                             <div class="payment-icon card-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -123,14 +124,30 @@
                                 </svg>
                             </div>
                             <div class="payment-info">
-                                <span class="payment-name">Credit/Debit Card</span>
+                                <span class="payment-name">Credit Card</span>
                                 <span class="payment-desc">Visa, Mastercard, JCB</span>
                             </div>
                         </div>
                     </label>
 
                     <label class="payment-option">
-                        <input type="radio" name="paymentMethod" value="bank_transfer">
+                        <input type="radio" name="paymentMethod" value="Debit Card">
+                        <div class="payment-option-content">
+                            <div class="payment-icon card-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                                </svg>
+                            </div>
+                            <div class="payment-info">
+                                <span class="payment-name">Debit Card</span>
+                                <span class="payment-desc">Direct debit from bank account</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="Bank Transfer">
                         <div class="payment-option-content">
                             <div class="payment-icon bank-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

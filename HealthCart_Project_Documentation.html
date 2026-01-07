@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>HealthCart E-Commerce Project Documentation</title>
+    <style>
+        body {
+            font-family: 'Calibri', 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            color: #333;
+        }
+        h1 {
+            font-size: 24pt;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        h2 {
+            font-size: 16pt;
+            color: #2980b9;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        h3 {
+            font-size: 13pt;
+            color: #34495e;
+            margin-top: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 10pt;
+        }
+        pre {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 10pt;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .section {
+            page-break-inside: avoid;
+        }
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        .title-page {
+            text-align: center;
+            padding: 100px 0;
+            page-break-after: always;
+        }
+        .title-page h1 {
+            font-size: 36pt;
+            border: none;
+            margin-bottom: 20px;
+        }
+        .title-page p {
+            font-size: 14pt;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="title-page">
+    <h1>HealthCart</h1>
+    <h2 style="border:none; color: #7f8c8d;">E-Commerce Project Documentation</h2>
+    <p><strong>Technology:</strong> Flask (Python) + MySQL + Vanilla JavaScript</p>
+    <p><strong>Date:</strong> January 2026</p>
+</div>
+
+<h1>1. Project Overview</h1>
+
+<p>HealthCart is a full-stack e-commerce web application built with Flask (Python) for the backend and vanilla JavaScript for the frontend. The application provides a complete online shopping experience for health and wellness products, featuring user authentication, product browsing, shopping cart, checkout with multiple payment methods, order tracking, and a comprehensive admin dashboard.</p>
+
+<h2>1.1 Technology Stack</h2>
+
+<table>
+    <tr>
+        <th>Layer</th>
+        <th>Technology</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td>Backend Framework</td>
+        <td>Flask 2.x</td>
+        <td>Python web framework for routing and business logic</td>
+    </tr>
+    <tr>
+        <td>Database</td>
+        <td>MySQL / MariaDB</td>
+        <td>Relational database for data persistence</td>
+    </tr>
+    <tr>
+        <td>Database Driver</td>
+        <td>Flask-MySQLdb</td>
+        <td>MySQL connector for Flask</td>
+    </tr>
+    <tr>
+        <td>Form Handling</td>
+        <td>Flask-WTF</td>
+        <td>Form validation and CSRF protection</td>
+    </tr>
+    <tr>
+        <td>Password Security</td>
+        <td>bcrypt</td>
+        <td>Password hashing with salt</td>
+    </tr>
+    <tr>
+        <td>Frontend</td>
+        <td>Vanilla JavaScript</td>
+        <td>Modular JS architecture (no frameworks)</td>
+    </tr>
+    <tr>
+        <td>Styling</td>
+        <td>Custom CSS</td>
+        <td>CSS Grid for responsive layouts</td>
+    </tr>
+    <tr>
+        <td>Charts</td>
+        <td>Chart.js</td>
+        <td>Admin dashboard analytics visualization</td>
+    </tr>
+</table>
+
+<h1>2. Project Structure</h1>
+
+<pre>
+elec4/
+├── app.py                          # Main Flask application (2,248 lines)
+├── elec4.sql                       # Database schema
+├── requirements.txt                # Python dependencies
+├── static/
+│   ├── css/
+│   │   ├── style.css              # Main styles
+│   │   └── shop.css               # Shop page styles
+│   ├── js/
+│   │   ├── main.js                # Global JavaScript
+│   │   └── shop/
+│   │       ├── core.js            # Shared utilities & state
+│   │       ├── cart.js            # Cart functionality
+│   │       ├── checkout.js        # Checkout flow
+│   │       ├── filters.js         # Product filtering
+│   │       ├── product-modal.js   # Product details modal
+│   │       ├── orders.js          # Order management
+│   │       ├── wishlist.js        # Wishlist functionality
+│   │       ├── notifications.js   # Notification system
+│   │       ├── profile.js         # User profile
+│   │       └── init.js            # Initialization
+│   ├── images/                    # Product & category images
+│   └── uploads/                   # User-uploaded files
+└── templates/
+    ├── base.html                  # Base template (login/register)
+    ├── index.html                 # Landing page
+    ├── shop.html                  # Main shop page
+    ├── admin/
+    │   ├── dashboard.html         # Admin dashboard with charts
+    │   ├── login.html             # Admin login
+    │   ├── products.html          # Product management
+    │   ├── product_form.html      # Product form modal
+    │   ├── categories.html        # Category management
+    │   ├── users.html             # User management
+    │   ├── orders.html            # Order management
+    │   └── sales_report.html      # Sales analytics
+    └── partials/
+        ├── _nav.html              # Shop navigation
+        ├── _product_listing.html  # Product grid/list
+        ├── _cart_sidebar.html     # Cart sidebar
+        ├── _checkout_modal.html   # Checkout form
+        ├── _orders_modal.html     # User orders
+        ├── _product_modal.html    # Product details
+        ├── _profile_modal.html    # User profile
+        ├── _wishlist_modal.html   # Wishlist view
+        └── _notification.html     # Notifications
+</pre>
+
+<h1>3. Database Schema</h1>
+
+<p>The application uses 11 database tables to manage all data. Below is a detailed description of each table.</p>
+
+<h2>3.1 Users Table</h2>
+<p>Stores customer and admin account information.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>name</td><td>VARCHAR(100)</td><td>User's full name</td></tr>
+    <tr><td>email</td><td>VARCHAR(100) UNIQUE</td><td>User's email (login identifier)</td></tr>
+    <tr><td>passwordhash</td><td>VARCHAR(255)</td><td>bcrypt hashed password</td></tr>
+    <tr><td>role</td><td>ENUM('admin','customer')</td><td>User role for authorization</td></tr>
+    <tr><td>status</td><td>ENUM('active','deactivated')</td><td>Account status</td></tr>
+    <tr><td>phone</td><td>VARCHAR(20)</td><td>Contact phone number</td></tr>
+    <tr><td>address</td><td>TEXT</td><td>Shipping address</td></tr>
+    <tr><td>createdat</td><td>TIMESTAMP</td><td>Account creation date</td></tr>
+    <tr><td>updatedat</td><td>TIMESTAMP</td><td>Last update date</td></tr>
+</table>
+
+<h2>3.2 Products Table</h2>
+<p>Stores product catalog information.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>name</td><td>VARCHAR(200)</td><td>Product name</td></tr>
+    <tr><td>description</td><td>TEXT</td><td>Product description</td></tr>
+    <tr><td>price</td><td>DECIMAL(10,2)</td><td>Product price in PHP</td></tr>
+    <tr><td>stock</td><td>INT</td><td>Available quantity</td></tr>
+    <tr><td>categoryid</td><td>INT (FK)</td><td>Foreign key to categories</td></tr>
+    <tr><td>imagepath</td><td>VARCHAR(255)</td><td>Path to product image</td></tr>
+    <tr><td>createdat</td><td>TIMESTAMP</td><td>Creation date</td></tr>
+    <tr><td>updatedat</td><td>TIMESTAMP</td><td>Last update date</td></tr>
+</table>
+
+<h2>3.3 Categories Table</h2>
+<p>Stores product categories.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>name</td><td>VARCHAR(100)</td><td>Category name</td></tr>
+    <tr><td>image_path</td><td>VARCHAR(255)</td><td>Category image path</td></tr>
+    <tr><td>createdat</td><td>TIMESTAMP</td><td>Creation date</td></tr>
+    <tr><td>updatedat</td><td>TIMESTAMP</td><td>Last update date</td></tr>
+</table>
+
+<p><strong>Current Categories (8):</strong></p>
+<ol>
+    <li>Vitamins & Supplements</li>
+    <li>First Aid & Emergency</li>
+    <li>Personal Care</li>
+    <li>Medical Devices</li>
+    <li>Baby & Maternal Care</li>
+    <li>Pain Relief</li>
+    <li>Respiratory Care</li>
+    <li>Skin Care & Dermatology</li>
+</ol>
+
+<h2>3.4 Orders Table</h2>
+<p>Stores order records.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>userid</td><td>INT (FK)</td><td>Foreign key to users</td></tr>
+    <tr><td>totalamount</td><td>DECIMAL(10,2)</td><td>Order total in PHP</td></tr>
+    <tr><td>status</td><td>ENUM</td><td>pending, processing, shipped, completed, cancelled</td></tr>
+    <tr><td>cancellation_reason</td><td>TEXT</td><td>Reason if order cancelled</td></tr>
+    <tr><td>shippingaddress</td><td>TEXT</td><td>Delivery address</td></tr>
+    <tr><td>createdat</td><td>TIMESTAMP</td><td>Order date</td></tr>
+    <tr><td>updatedat</td><td>TIMESTAMP</td><td>Last update date</td></tr>
+</table>
+
+<h2>3.5 OrderItems Table</h2>
+<p>Stores individual items within each order.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>orderid</td><td>INT (FK)</td><td>Foreign key to orders</td></tr>
+    <tr><td>productid</td><td>INT (FK)</td><td>Foreign key to products</td></tr>
+    <tr><td>quantity</td><td>INT</td><td>Quantity ordered</td></tr>
+    <tr><td>price</td><td>DECIMAL(10,2)</td><td>Price at time of order</td></tr>
+</table>
+
+<h2>3.6 Carts Table</h2>
+<p>Stores user shopping carts (one per user).</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>userid</td><td>INT (FK, UNIQUE)</td><td>Foreign key to users (one cart per user)</td></tr>
+    <tr><td>created_at</td><td>TIMESTAMP</td><td>Cart creation date</td></tr>
+</table>
+
+<h2>3.7 CartItems Table</h2>
+<p>Stores items in user's shopping cart.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>cartid</td><td>INT (FK)</td><td>Foreign key to carts</td></tr>
+    <tr><td>productid</td><td>INT (FK)</td><td>Foreign key to products</td></tr>
+    <tr><td>quantity</td><td>INT</td><td>Quantity in cart (default 1)</td></tr>
+</table>
+
+<h2>3.8 Payments Table</h2>
+<p>Stores payment information for orders.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>orderid</td><td>INT (FK)</td><td>Foreign key to orders</td></tr>
+    <tr><td>method</td><td>ENUM</td><td>GCash, PayPal, Credit Card, Debit Card, Bank Transfer, Cash on Delivery</td></tr>
+    <tr><td>status</td><td>ENUM</td><td>pending, paid, failed, refunded</td></tr>
+    <tr><td>reference_no</td><td>VARCHAR(100)</td><td>Payment reference number</td></tr>
+    <tr><td>proof_image</td><td>VARCHAR(255)</td><td>Path to payment proof screenshot</td></tr>
+    <tr><td>paid_at</td><td>DATETIME</td><td>Payment completion date</td></tr>
+</table>
+
+<h2>3.9 Wishlist Table</h2>
+<p>Stores user's saved products.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>userid</td><td>INT (FK)</td><td>Foreign key to users</td></tr>
+    <tr><td>productid</td><td>INT (FK)</td><td>Foreign key to products</td></tr>
+    <tr><td>createdat</td><td>TIMESTAMP</td><td>Date added to wishlist</td></tr>
+</table>
+<p><em>Unique constraint on (userid, productid) prevents duplicates.</em></p>
+
+<h2>3.10 Notifications Table</h2>
+<p>Stores system notifications for users.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>userid</td><td>INT (FK)</td><td>Foreign key to users</td></tr>
+    <tr><td>title</td><td>VARCHAR(255)</td><td>Notification title</td></tr>
+    <tr><td>message</td><td>TEXT</td><td>Notification content</td></tr>
+    <tr><td>type</td><td>VARCHAR(50)</td><td>Type: info, order, alert, etc.</td></tr>
+    <tr><td>is_read</td><td>TINYINT</td><td>Read status (0 or 1)</td></tr>
+    <tr><td>createdat</td><td>TIMESTAMP</td><td>Creation date</td></tr>
+</table>
+
+<h2>3.11 Contact Messages Table</h2>
+<p>Stores contact form submissions.</p>
+<table>
+    <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>id</td><td>INT (PK)</td><td>Primary key, auto-increment</td></tr>
+    <tr><td>name</td><td>VARCHAR(100)</td><td>Sender's name</td></tr>
+    <tr><td>email</td><td>VARCHAR(100)</td><td>Sender's email</td></tr>
+    <tr><td>message</td><td>TEXT</td><td>Message content</td></tr>
+    <tr><td>created_at</td><td>TIMESTAMP</td><td>Submission date</td></tr>
+</table>
+
+<h2>3.12 Database Relationships Diagram</h2>
+<pre>
+users (1) ──┬─→ (many) carts
+            ├─→ (many) orders
+            ├─→ (many) notifications
+            └─→ (many) wishlist
+
+orders (1) ──┬─→ (many) orderitems
+             └─→ (1) payments
+
+orderitems (many) ──→ (1) products
+cartitems (many) ──→ (1) products & carts
+
+products (many) ──→ (1) categories
+wishlist (many) ──→ (1) products
+
+carts (many) ──→ (many) cartitems
+</pre>
+
+<h1>4. Backend API Routes</h1>
+
+<h2>4.1 Authentication Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Protection</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/</td><td>GET</td><td>None</td><td>Landing page with login/register modals</td></tr>
+    <tr><td>/login</td><td>POST</td><td>None</td><td>User login with email and password</td></tr>
+    <tr><td>/register</td><td>POST</td><td>None</td><td>New user registration</td></tr>
+    <tr><td>/logout</td><td>GET</td><td>login_required</td><td>User logout, clears session</td></tr>
+</table>
+
+<h2>4.2 Shop Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/shop</td><td>GET</td><td>Main shop page with product listing, filtering, and sorting</td></tr>
+    <tr><td>/api/product/&lt;id&gt;</td><td>GET</td><td>Get single product details as JSON</td></tr>
+</table>
+
+<h2>4.3 Cart API Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/api/cart</td><td>GET</td><td>Get user's current cart with items</td></tr>
+    <tr><td>/api/cart/add</td><td>POST</td><td>Add product to cart (validates stock)</td></tr>
+    <tr><td>/api/cart/update</td><td>PUT</td><td>Update cart item quantity</td></tr>
+    <tr><td>/api/cart/remove</td><td>DELETE</td><td>Remove single item from cart</td></tr>
+    <tr><td>/api/cart/clear</td><td>DELETE</td><td>Clear entire cart</td></tr>
+</table>
+
+<h2>4.4 Checkout & Payment Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/api/checkout</td><td>POST</td><td>Process checkout, create order, deduct stock</td></tr>
+    <tr><td>/api/payment/upload-proof</td><td>POST</td><td>Upload payment proof screenshot</td></tr>
+</table>
+
+<h2>4.5 Order Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/api/orders</td><td>GET</td><td>Get user's order history with items</td></tr>
+</table>
+
+<h2>4.6 Wishlist API Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/api/wishlist</td><td>GET</td><td>Get all wishlist items</td></tr>
+    <tr><td>/api/wishlist/add</td><td>POST</td><td>Add product to wishlist</td></tr>
+    <tr><td>/api/wishlist/remove</td><td>POST</td><td>Remove product from wishlist</td></tr>
+    <tr><td>/api/wishlist/toggle</td><td>POST</td><td>Toggle wishlist item (add/remove)</td></tr>
+    <tr><td>/api/wishlist/check/&lt;id&gt;</td><td>GET</td><td>Check if product is in wishlist</td></tr>
+    <tr><td>/api/wishlist/count</td><td>GET</td><td>Get wishlist item count</td></tr>
+    <tr><td>/api/wishlist/move-to-cart</td><td>POST</td><td>Move wishlist item to cart</td></tr>
+</table>
+
+<h2>4.7 Profile Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/api/profile/update</td><td>POST</td><td>Update user's phone and address</td></tr>
+</table>
+
+<h2>4.8 Notification Routes</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/api/notifications</td><td>GET</td><td>Get user's recent notifications</td></tr>
+    <tr><td>/api/notifications/add</td><td>POST</td><td>Add new notification</td></tr>
+    <tr><td>/api/notifications/read/&lt;id&gt;</td><td>PUT</td><td>Mark notification as read</td></tr>
+    <tr><td>/api/notifications/read-all</td><td>PUT</td><td>Mark all notifications as read</td></tr>
+    <tr><td>/api/notifications/&lt;id&gt;</td><td>DELETE</td><td>Delete notification</td></tr>
+    <tr><td>/api/notifications/unread-count</td><td>GET</td><td>Get unread notification count</td></tr>
+</table>
+
+<h1>5. Admin Panel Routes</h1>
+
+<h2>5.1 Dashboard & Reports</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/dashboard</td><td>GET</td><td>Admin dashboard with sales analytics and charts</td></tr>
+    <tr><td>/salesreport</td><td>GET</td><td>Detailed sales report with date filtering</td></tr>
+</table>
+
+<h2>5.2 Product Management</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/products</td><td>GET</td><td>List products with pagination, search, filter</td></tr>
+    <tr><td>/admin/products/add</td><td>POST</td><td>Create new product with image upload</td></tr>
+    <tr><td>/admin/products/edit/&lt;id&gt;</td><td>GET/POST</td><td>Edit product details</td></tr>
+    <tr><td>/admin/products/delete/&lt;id&gt;</td><td>GET</td><td>Delete product</td></tr>
+</table>
+
+<h2>5.3 Category Management</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/categories</td><td>GET</td><td>List categories with search</td></tr>
+    <tr><td>/admin/categories/add</td><td>POST</td><td>Create new category with image</td></tr>
+    <tr><td>/admin/categories/edit/&lt;id&gt;</td><td>GET/POST</td><td>Edit category details</td></tr>
+    <tr><td>/admin/categories/delete/&lt;id&gt;</td><td>GET</td><td>Delete category (checks for products first)</td></tr>
+</table>
+
+<h2>5.4 Order Management</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/orders</td><td>GET</td><td>List orders with status filtering and pagination</td></tr>
+    <tr><td>/admin/orders/details/&lt;id&gt;</td><td>GET</td><td>Get order details as JSON</td></tr>
+    <tr><td>/admin/orders/update_status/&lt;id&gt;</td><td>POST</td><td>Update order status with validation</td></tr>
+</table>
+
+<h2>5.5 User Management</h2>
+<table>
+    <tr>
+        <th>Route</th>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>/users</td><td>GET</td><td>List users with search and pagination</td></tr>
+    <tr><td>/admin/users/add</td><td>POST</td><td>Create admin or customer user</td></tr>
+    <tr><td>/admin/users/edit/&lt;id&gt;</td><td>GET/POST</td><td>Edit user details</td></tr>
+    <tr><td>/admin/users/delete/&lt;id&gt;</td><td>GET</td><td>Delete user</td></tr>
+</table>
+
+<h1>6. Core Business Logic</h1>
+
+<h2>6.1 Product Filtering System</h2>
+<p>The <code>get_filtered_products()</code> function supports multiple filter types:</p>
+<ul>
+    <li><strong>Category Filter:</strong> Filter by one or multiple category IDs</li>
+    <li><strong>Price Range:</strong> min_price and max_price parameters</li>
+    <li><strong>Stock Filter:</strong> in_stock_only boolean to show only available products</li>
+    <li><strong>Search:</strong> Text search in product name and description</li>
+    <li><strong>Sorting Options:</strong>
+        <ul>
+            <li>newest - Sort by creation date (newest first)</li>
+            <li>price_asc - Sort by price (low to high)</li>
+            <li>price_desc - Sort by price (high to low)</li>
+            <li>name_asc - Sort alphabetically (A-Z)</li>
+            <li>name_desc - Sort alphabetically (Z-A)</li>
+        </ul>
+    </li>
+</ul>
+
+<h2>6.2 Cart Operations</h2>
+<ol>
+    <li><strong>Cart Creation:</strong> Automatically creates a cart for user on first access</li>
+    <li><strong>Add to Cart:</strong> Validates stock availability, detects duplicates (updates quantity)</li>
+    <li><strong>Update Quantity:</strong> Validates new quantity against available stock</li>
+    <li><strong>Remove Item:</strong> Removes single item or clears entire cart</li>
+</ol>
+
+<h2>6.3 Checkout Flow</h2>
+<ol>
+    <li>Validate cart is not empty</li>
+    <li>Verify stock availability using database locks (FOR UPDATE)</li>
+    <li>Calculate total order amount</li>
+    <li>Create order record in database</li>
+    <li>Create order items with price snapshot</li>
+    <li>Create payment record</li>
+    <li>Deduct stock from products</li>
+    <li>Clear user's cart</li>
+    <li>Create order notification for user</li>
+</ol>
+
+<div class="highlight">
+    <strong>Status Assignment:</strong><br>
+    - Cash on Delivery orders: Set to "pending" status<br>
+    - Online payment orders: Set to "processing" status
+</div>
+
+<h2>6.4 Order Status State Machine</h2>
+<pre>
+Valid Status Transitions:
+┌─────────────┐
+│   pending   │ ──→ processing ──→ shipped ──→ completed
+└─────────────┘
+      │
+      └──→ cancelled (requires reason)
+
+┌─────────────┐
+│ processing  │ ──→ shipped ──→ completed
+└─────────────┘
+      │
+      └──→ cancelled (requires reason)
+
+┌─────────────┐
+│   shipped   │ ──→ completed
+└─────────────┘
+
+completed and cancelled are terminal states (no further transitions)
+</pre>
+
+<h2>6.5 Payment System</h2>
+<p><strong>Supported Payment Methods (6):</strong></p>
+<ol>
+    <li>GCash (requires proof upload)</li>
+    <li>PayPal (requires proof upload)</li>
+    <li>Credit Card (requires proof upload)</li>
+    <li>Debit Card (requires proof upload)</li>
+    <li>Bank Transfer (requires proof upload)</li>
+    <li>Cash on Delivery (no proof required)</li>
+</ol>
+
+<p><strong>Payment Proof Upload:</strong></p>
+<ul>
+    <li>Stores uploaded image with UUID prefix for uniqueness</li>
+    <li>Updates payment status to "pending_verification"</li>
+    <li>Reference number format: METHOD-YYYYMMDD-ORDERID</li>
+</ul>
+
+<h1>7. Frontend JavaScript Architecture</h1>
+
+<h2>7.1 Module Overview</h2>
+<p>The frontend uses a modular JavaScript architecture located in <code>static/js/shop/</code>:</p>
+
+<table>
+    <tr>
+        <th>Module</th>
+        <th>File</th>
+        <th>Purpose</th>
+    </tr>
+    <tr>
+        <td>Core</td>
+        <td>core.js</td>
+        <td>Shared utilities, global state, toast notifications, debounce</td>
+    </tr>
+    <tr>
+        <td>Cart</td>
+        <td>cart.js</td>
+        <td>Cart rendering, quantity controls, total calculations</td>
+    </tr>
+    <tr>
+        <td>Filters</td>
+        <td>filters.js</td>
+        <td>Category/price/stock filters, search, sorting</td>
+    </tr>
+    <tr>
+        <td>Product Modal</td>
+        <td>product-modal.js</td>
+        <td>Product detail popup, add to cart from modal</td>
+    </tr>
+    <tr>
+        <td>Checkout</td>
+        <td>checkout.js</td>
+        <td>Multi-step checkout, payment selection, proof upload</td>
+    </tr>
+    <tr>
+        <td>Orders</td>
+        <td>orders.js</td>
+        <td>Order history display, order details</td>
+    </tr>
+    <tr>
+        <td>Wishlist</td>
+        <td>wishlist.js</td>
+        <td>Wishlist management, move to cart</td>
+    </tr>
+    <tr>
+        <td>Notifications</td>
+        <td>notifications.js</td>
+        <td>Notification center, mark as read, unread count</td>
+    </tr>
+    <tr>
+        <td>Profile</td>
+        <td>profile.js</td>
+        <td>User profile editing, save changes</td>
+    </tr>
+    <tr>
+        <td>Init</td>
+        <td>init.js</td>
+        <td>Page initialization, event listener setup</td>
+    </tr>
+</table>
+
+<h2>7.2 Template Partials</h2>
+<p>Reusable HTML components in <code>templates/partials/</code>:</p>
+
+<table>
+    <tr>
+        <th>Partial</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>_nav.html</td>
+        <td>Navigation bar with search, notifications bell, profile dropdown, cart button</td>
+    </tr>
+    <tr>
+        <td>_product_listing.html</td>
+        <td>Product grid/list with sidebar filters and toolbar</td>
+    </tr>
+    <tr>
+        <td>_cart_sidebar.html</td>
+        <td>Slide-out cart drawer with items and checkout button</td>
+    </tr>
+    <tr>
+        <td>_checkout_modal.html</td>
+        <td>Checkout form with payment method selection</td>
+    </tr>
+    <tr>
+        <td>_orders_modal.html</td>
+        <td>Order history list with status badges</td>
+    </tr>
+    <tr>
+        <td>_product_modal.html</td>
+        <td>Product detail popup with add to cart</td>
+    </tr>
+    <tr>
+        <td>_profile_modal.html</td>
+        <td>User profile editor</td>
+    </tr>
+    <tr>
+        <td>_wishlist_modal.html</td>
+        <td>Wishlist view with move to cart option</td>
+    </tr>
+    <tr>
+        <td>_notification.html</td>
+        <td>Notification dropdown</td>
+    </tr>
+</table>
+
+<h1>8. Security Features</h1>
+
+<table>
+    <tr>
+        <th>Feature</th>
+        <th>Implementation</th>
+    </tr>
+    <tr>
+        <td>Password Hashing</td>
+        <td>bcrypt with automatic salt generation</td>
+    </tr>
+    <tr>
+        <td>CSRF Protection</td>
+        <td>Flask-WTF CSRFProtect enabled globally</td>
+    </tr>
+    <tr>
+        <td>SQL Injection Prevention</td>
+        <td>Parameterized queries used throughout</td>
+    </tr>
+    <tr>
+        <td>Session Security</td>
+        <td>30-day session timeout, secure cookies</td>
+    </tr>
+    <tr>
+        <td>File Upload Security</td>
+        <td>Whitelist allowed extensions (png, jpg, jpeg, gif, webp), UUID prefix, 16MB size limit, secure_filename()</td>
+    </tr>
+    <tr>
+        <td>Authorization</td>
+        <td>@login_required and @admin_required decorators</td>
+    </tr>
+    <tr>
+        <td>Stock Protection</td>
+        <td>FOR UPDATE database locks prevent overselling</td>
+    </tr>
+    <tr>
+        <td>Input Validation</td>
+        <td>WTForms validators for all form inputs</td>
+    </tr>
+</table>
+
+<h1>9. User Features Summary</h1>
+
+<h2>9.1 Customer Features</h2>
+<ul>
+    <li>User registration with email validation</li>
+    <li>Secure login/logout with session management</li>
+    <li>Browse products with advanced filtering (category, price, stock)</li>
+    <li>Search products by name and description</li>
+    <li>Toggle between grid and list view</li>
+    <li>Quick product preview modal with add-to-cart</li>
+    <li>Shopping cart with quantity management</li>
+    <li>Wishlist functionality (add/remove/move to cart)</li>
+    <li>Multi-step checkout process</li>
+    <li>6 payment methods with proof upload</li>
+    <li>Order history and status tracking</li>
+    <li>Real-time order notifications</li>
+    <li>Profile management (phone, address)</li>
+    <li>Notification center (mark read, delete)</li>
+    <li>Stock validation prevents overselling</li>
+</ul>
+
+<h2>9.2 Admin Features</h2>
+<ul>
+    <li><strong>Dashboard Analytics:</strong>
+        <ul>
+            <li>Summary cards (revenue, orders, customers, products)</li>
+            <li>Sales chart with daily/weekly/monthly views</li>
+            <li>Top selling products ranking</li>
+            <li>Recent pending orders list</li>
+        </ul>
+    </li>
+    <li><strong>Product Management:</strong>
+        <ul>
+            <li>Create, read, update, delete products</li>
+            <li>Image upload with UUID prefix</li>
+            <li>Category assignment</li>
+            <li>Stock management</li>
+            <li>Search and filter by category</li>
+            <li>Pagination</li>
+        </ul>
+    </li>
+    <li><strong>Category Management:</strong>
+        <ul>
+            <li>Create, edit, delete categories</li>
+            <li>Product count per category</li>
+            <li>Deletion protection (checks for associated products)</li>
+        </ul>
+    </li>
+    <li><strong>Order Management:</strong>
+        <ul>
+            <li>List all orders with status filtering</li>
+            <li>Order details view</li>
+            <li>Status updates with state machine validation</li>
+            <li>Cancellation with required reason</li>
+            <li>Sorting and pagination</li>
+        </ul>
+    </li>
+    <li><strong>Sales Reports:</strong>
+        <ul>
+            <li>Date range filtering</li>
+            <li>Summary statistics</li>
+            <li>Order listings by period</li>
+        </ul>
+    </li>
+    <li><strong>User Management:</strong>
+        <ul>
+            <li>Create admin/customer accounts</li>
+            <li>Edit user roles and status</li>
+            <li>Password management</li>
+            <li>Search and pagination</li>
+        </ul>
+    </li>
+</ul>
+
+<h1>10. Form Validation</h1>
+
+<h2>10.1 User Forms</h2>
+<pre>
+LoginForm:
+  - email: Required, valid email format
+  - password: Required
+  - remember_me: Optional boolean
+
+RegisterForm:
+  - name: Required, 2-100 characters
+  - email: Required, valid email format
+  - phone: Optional, regex validation for phone format
+  - address: Optional, text area
+  - password: Required, minimum 8 characters
+  - confirm_password: Must match password
+</pre>
+
+<h2>10.2 Admin Forms</h2>
+<pre>
+AdminProductForm:
+  - name: Required, max 200 characters
+  - description: Optional, text area
+  - price: Required, decimal, minimum 0.01
+  - stock: Required, integer, minimum 0
+  - categoryid: Required, select from categories
+  - image: File upload (required for new, optional for edit)
+
+AdminCategoryForm:
+  - name: Required, max 100 characters
+  - image: Required, file upload
+
+AdminUserForm:
+  - name: Required
+  - email: Required, valid email
+  - password: Optional for edit, required for new
+  - role: Select (admin/customer)
+  - status: Select (active/deactivated)
+  - phone: Optional, regex validation
+
+AdminOrderStatusForm:
+  - status: Select from 5 status options
+  - reason: Required if status is "cancelled"
+</pre>
+
+<h1>11. Configuration</h1>
+
+<pre>
+Flask Configuration:
+  - Database: MySQL via flask_mysqldb
+  - Secret Key: "dev-secret-key-change-in-production"
+  - Session Duration: 30 days (permanent sessions)
+  - CSRF Protection: Enabled
+  - Max Upload Size: 16 MB
+  - Allowed Upload Extensions: png, jpg, jpeg, gif, webp
+  - Debug Mode: True (development)
+</pre>
+
+<h1>12. Workflow Examples</h1>
+
+<h2>12.1 Customer Shopping Workflow</h2>
+<ol>
+    <li>Register or login to account</li>
+    <li>Browse shop (filter by category, price, stock status)</li>
+    <li>View product details in modal popup</li>
+    <li>Add products to cart (system validates stock)</li>
+    <li>Modify quantities in cart sidebar</li>
+    <li>Proceed to checkout</li>
+    <li>Select payment method</li>
+    <li>Enter shipping address</li>
+    <li>Submit order</li>
+    <li>For online payments: upload payment proof screenshot</li>
+    <li>Order created with pending/processing status</li>
+    <li>View order in order history</li>
+    <li>Track order status changes via notifications</li>
+</ol>
+
+<h2>12.2 Admin Order Processing Workflow</h2>
+<ol>
+    <li>Login as admin user</li>
+    <li>View pending orders on dashboard</li>
+    <li>Click order to view details</li>
+    <li>Verify payment proof (for online payments)</li>
+    <li>Update status: pending → processing</li>
+    <li>Prepare order for shipping</li>
+    <li>Update status: processing → shipped</li>
+    <li>Upon delivery confirmation</li>
+    <li>Update status: shipped → completed</li>
+    <li>View completed order in sales report</li>
+</ol>
+
+</body>
+</html>

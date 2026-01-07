@@ -161,14 +161,14 @@ function handlePaymentMethodChange() {
     const paymentDetails = document.getElementById('paymentDetails');
     const paymentInstructions = document.getElementById('paymentInstructions');
 
-    if (selectedMethod === 'cod') {
+    if (selectedMethod === 'Cash on Delivery') {
         paymentDetails.style.display = 'none';
     } else {
         paymentDetails.style.display = 'block';
 
         let instructions = '';
         switch (selectedMethod) {
-            case 'gcash':
+            case 'GCash':
                 instructions = `
                     <p>Send payment to:</p>
                     <p class="payment-account"><strong>GCash Number:</strong> 0917 123 4567</p>
@@ -176,21 +176,21 @@ function handlePaymentMethodChange() {
                     <p class="payment-note">Please upload your payment screenshot after placing the order.</p>
                 `;
                 break;
-            case 'maya':
+            case 'PayPal':
                 instructions = `
                     <p>Send payment to:</p>
-                    <p class="payment-account"><strong>Maya Number:</strong> 0918 765 4321</p>
-                    <p class="payment-account"><strong>Account Name:</strong> HealthCart Inc.</p>
-                    <p class="payment-note">Please upload your payment screenshot after placing the order.</p>
+                    <p class="payment-account"><strong>PayPal Email:</strong> payments@healthcart.com</p>
+                    <p class="payment-note">Please upload your payment confirmation after placing the order.</p>
                 `;
                 break;
-            case 'card':
+            case 'Credit Card':
+            case 'Debit Card':
                 instructions = `
                     <p>Card payment will be processed securely.</p>
                     <p class="payment-note">You will receive a confirmation email after payment.</p>
                 `;
                 break;
-            case 'bank_transfer':
+            case 'Bank Transfer':
                 instructions = `
                     <p>Bank Transfer Details:</p>
                     <p class="payment-account"><strong>Bank:</strong> BDO</p>
@@ -227,16 +227,9 @@ function populateOrderSummary() {
     document.getElementById('summaryAddress').textContent = document.getElementById('shippingAddress').value;
     document.getElementById('summaryPhone').textContent = document.getElementById('shippingPhone').value;
 
-    // Payment
+    // Payment - values now match database enum directly
     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-    const paymentNames = {
-        'cod': 'Cash on Delivery',
-        'gcash': 'GCash',
-        'maya': 'Maya',
-        'card': 'Credit/Debit Card',
-        'bank_transfer': 'Bank Transfer'
-    };
-    document.getElementById('summaryPayment').textContent = paymentNames[paymentMethod.value] || paymentMethod.value;
+    document.getElementById('summaryPayment').textContent = paymentMethod.value;
 }
 
 async function placeOrder() {
@@ -337,7 +330,7 @@ function showProofUploadStep(orderData) {
     let detailsHTML = '<div class="proof-payment-info">';
 
     switch (orderData.payment_method) {
-        case 'gcash':
+        case 'GCash':
             detailsHTML += `
                 <div class="proof-payment-row">
                     <span class="label">Method</span>
@@ -353,27 +346,23 @@ function showProofUploadStep(orderData) {
                 </div>
             `;
             break;
-        case 'maya':
+        case 'PayPal':
             detailsHTML += `
                 <div class="proof-payment-row">
                     <span class="label">Method</span>
-                    <span class="proof-method-badge maya">Maya</span>
+                    <span class="proof-method-badge paypal">PayPal</span>
                 </div>
                 <div class="proof-payment-row">
                     <span class="label">Send to</span>
-                    <span class="value copyable">0918 765 4321</span>
-                </div>
-                <div class="proof-payment-row">
-                    <span class="label">Account Name</span>
-                    <span class="value">HealthCart Inc.</span>
+                    <span class="value copyable">payments@healthcart.com</span>
                 </div>
             `;
             break;
-        case 'bank_transfer':
+        case 'Bank Transfer':
             detailsHTML += `
                 <div class="proof-payment-row">
                     <span class="label">Method</span>
-                    <span class="proof-method-badge bank_transfer">Bank Transfer</span>
+                    <span class="proof-method-badge bank">Bank Transfer</span>
                 </div>
                 <div class="proof-payment-row">
                     <span class="label">Bank</span>
@@ -389,11 +378,12 @@ function showProofUploadStep(orderData) {
                 </div>
             `;
             break;
-        case 'card':
+        case 'Credit Card':
+        case 'Debit Card':
             detailsHTML += `
                 <div class="proof-payment-row">
                     <span class="label">Method</span>
-                    <span class="proof-method-badge card">Card Payment</span>
+                    <span class="proof-method-badge card">${orderData.payment_method}</span>
                 </div>
                 <div class="proof-payment-row">
                     <span class="label">Reference</span>
@@ -435,7 +425,7 @@ function showOrderSuccess(orderData) {
     // Set appropriate message based on payment method
     const orderMessage = document.getElementById('orderMessage');
 
-    if (orderData.payment_method === 'cod') {
+    if (orderData.payment_method === 'Cash on Delivery') {
         orderMessage.textContent = 'Please prepare the exact amount for payment upon delivery.';
     } else if (orderData.proof_uploaded) {
         orderMessage.textContent = 'Your payment proof has been submitted. We will verify it shortly.';
@@ -459,7 +449,7 @@ function resetCheckoutForm() {
     document.getElementById('shippingNotes').value = '';
 
     // Reset payment method
-    document.querySelector('input[name="paymentMethod"][value="cod"]').checked = true;
+    document.querySelector('input[name="paymentMethod"][value="Cash on Delivery"]').checked = true;
     handlePaymentMethodChange();
 
     // Show footer and steps

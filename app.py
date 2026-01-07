@@ -663,8 +663,8 @@ def checkout():
             total_amount += float(item["price"]) * item["quantity"]
 
         # Determine order status based on payment method
-        order_status = "pending" if payment_method == "cod" else "processing"
-        payment_status = "pending" if payment_method == "cod" else "pending"
+        order_status = "pending" if payment_method == "Cash on Delivery" else "processing"
+        payment_status = "pending" if payment_method == "Cash on Delivery" else "pending"
 
         # Create order
         cur.execute("""
@@ -687,8 +687,17 @@ def checkout():
 
         # Create payment record
         reference_no = None
-        if payment_method != "cod":
-            reference_no = f"{payment_method.upper()}-{datetime.now().strftime('%Y%m%d')}-{order_id:06d}"
+        if payment_method != "Cash on Delivery":
+            # Generate reference number with abbreviated method name
+            method_abbrev = {
+                "GCash": "GCASH",
+                "PayPal": "PAYPAL",
+                "Credit Card": "CC",
+                "Debit Card": "DC",
+                "Bank Transfer": "BT"
+            }
+            abbrev = method_abbrev.get(payment_method, payment_method[:3].upper())
+            reference_no = f"{abbrev}-{datetime.now().strftime('%Y%m%d')}-{order_id:06d}"
 
         cur.execute("""
             INSERT INTO payments (orderid, method, status, reference_no)
@@ -704,7 +713,7 @@ def checkout():
 
         # Create notification for the user
         order_number = f"#{order_id:06d}"
-        if payment_method == "cod":
+        if payment_method == "Cash on Delivery":
             notif_message = f"Your order {order_number} has been placed. Please prepare ₱{total_amount:.2f} for payment upon delivery."
         else:
             notif_message = f"Your order {order_number} has been placed successfully. Total: ₱{total_amount:.2f}"
@@ -724,7 +733,7 @@ def checkout():
             "reference_no": reference_no,
             "total": total_amount,
             "payment_method": payment_method,
-            "requires_proof": payment_method in ["gcash", "maya", "bank_transfer"]
+            "requires_proof": payment_method in ["GCash", "PayPal", "Credit Card", "Debit Card", "Bank Transfer"]
         })
 
     except Exception as e:
@@ -1804,10 +1813,14 @@ def admin_orders():
     
     valid_sort_order = 'DESC' if sort_order == 'desc' else 'ASC'
 
-    # Fetch orders for the current page
+    # Fetch orders for the current page with payment info
     select_query = f"""
-        SELECT o.id, o.totalamount, o.status, o.createdat, u.name as customer_name, o.cancellation_reason
-        {base_query}
+        SELECT o.id, o.totalamount, o.status, o.createdat, u.name as customer_name, o.cancellation_reason,
+               p.id as payment_id, p.method as payment_method, p.status as payment_status,
+               p.reference_no, p.proof_image
+        FROM orders o
+        LEFT JOIN users u ON o.userid = u.id
+        LEFT JOIN payments p ON o.id = p.orderid
         {where_sql}
         ORDER BY {order_column} {valid_sort_order}
         LIMIT %s OFFSET %s
@@ -1832,32 +1845,64 @@ def admin_orders():
 @app.route('/admin/orders/details/<int:order_id>')
 @admin_required
 def order_details(order_id):
-    cur = mysql.connection.cursor()
-    
-    # Fetch order details
+    cur = mysql.connection.cursor(DictCursor)
+
+    # Fetch order details with payment info
     cur.execute("""
-        SELECT o.id, o.totalamount, o.status, o.shippingaddress, o.paymentmethod, o.createdat, u.name as customer_name, u.email
+        SELECT o.id, o.totalamount, o.status, o.shippingaddress, o.createdat, o.cancellation_reason,
+               u.name as customer_name, u.email, u.phone,
+               p.id as payment_id, p.method as payment_method, p.status as payment_status,
+               p.reference_no, p.proof_image, p.paid_at
         FROM orders o
         LEFT JOIN users u ON o.userid = u.id
+        LEFT JOIN payments p ON o.id = p.orderid
         WHERE o.id = %s
     """, [order_id])
     order = cur.fetchone()
 
-    # Fetch order items
+    # Fetch order items with product images
     cur.execute("""
-        SELECT oi.quantity, oi.price, p.name as product_name
+        SELECT oi.quantity, oi.price, pr.name as product_name, pr.imagepath
         FROM orderitems oi
-        JOIN products p ON oi.productid = p.id
+        JOIN products pr ON oi.productid = pr.id
         WHERE oi.orderid = %s
     """, [order_id])
     items = cur.fetchall()
-    
+
     cur.close()
-    
+
     if not order:
-        return jsonify({'error': 'Order not found'}), 404
-        
-    return jsonify({'order': order, 'items': items})
+        return jsonify({'success': False, 'error': 'Order not found'}), 404
+
+    # Format order data
+    order_data = {
+        'id': order['id'],
+        'totalamount': float(order['totalamount']),
+        'status': order['status'],
+        'shippingaddress': order['shippingaddress'],
+        'createdat': order['createdat'].strftime('%Y-%m-%d %H:%M') if order['createdat'] else None,
+        'cancellation_reason': order['cancellation_reason'],
+        'customer_name': order['customer_name'],
+        'customer_email': order['email'],
+        'customer_phone': order['phone'],
+        'payment_id': order['payment_id'],
+        'payment_method': order['payment_method'],
+        'payment_status': order['payment_status'],
+        'reference_no': order['reference_no'],
+        'proof_image': order['proof_image'],
+        'paid_at': order['paid_at'].strftime('%Y-%m-%d %H:%M') if order['paid_at'] else None
+    }
+
+    # Format items data
+    items_data = [{
+        'product_name': item['product_name'],
+        'quantity': item['quantity'],
+        'price': float(item['price']),
+        'subtotal': float(item['price']) * item['quantity'],
+        'imagepath': item['imagepath']
+    } for item in items]
+
+    return jsonify({'success': True, 'order': order_data, 'items': items_data})
 
 @app.route('/admin/orders/update_status/<int:order_id>', methods=['POST'])
 @admin_required
@@ -1917,8 +1962,123 @@ def update_order_status(order_id):
 
         flash("Order status updated successfully.", "success")
         return jsonify({'success': True})
-    
+
     return jsonify({'success': False, 'errors': form.errors}), 400
+
+
+@app.route('/admin/payments/verify/<int:payment_id>', methods=['POST'])
+@admin_required
+@csrf.exempt
+def verify_payment(payment_id):
+    """Verify or reject a payment."""
+    data = request.get_json() if request.is_json else request.form
+    action = data.get('action')  # 'approve' or 'reject'
+    reject_reason = data.get('reason', '').strip()
+
+    if action not in ['approve', 'reject']:
+        return jsonify({'success': False, 'message': 'Invalid action'}), 400
+
+    cur = mysql.connection.cursor(DictCursor)
+
+    # Get payment and order info
+    cur.execute("""
+        SELECT p.*, o.userid, o.id as order_id
+        FROM payments p
+        JOIN orders o ON p.orderid = o.id
+        WHERE p.id = %s
+    """, (payment_id,))
+    payment = cur.fetchone()
+
+    if not payment:
+        cur.close()
+        return jsonify({'success': False, 'message': 'Payment not found'}), 404
+
+    if action == 'approve':
+        # Update payment status to 'paid'
+        cur.execute("""
+            UPDATE payments
+            SET status = 'paid', paid_at = NOW()
+            WHERE id = %s
+        """, (payment_id,))
+
+        # Create notification for user
+        create_notification(
+            payment['userid'],
+            "Payment Verified!",
+            f"Your payment for Order #{payment['order_id']:06d} has been verified. Your order is now being processed.",
+            "order"
+        )
+
+        message = "Payment approved successfully"
+
+    else:  # reject
+        if not reject_reason:
+            cur.close()
+            return jsonify({'success': False, 'message': 'Rejection reason is required'}), 400
+
+        # Update payment status to 'failed'
+        cur.execute("""
+            UPDATE payments
+            SET status = 'failed'
+            WHERE id = %s
+        """, (payment_id,))
+
+        # Update order status to pending (so user can retry)
+        cur.execute("""
+            UPDATE orders
+            SET status = 'pending'
+            WHERE id = %s
+        """, (payment['order_id'],))
+
+        # Create notification for user
+        create_notification(
+            payment['userid'],
+            "Payment Rejected",
+            f"Your payment for Order #{payment['order_id']:06d} was not verified. Reason: {reject_reason}. Please submit a new payment proof or contact support.",
+            "alert"
+        )
+
+        message = "Payment rejected"
+
+    mysql.connection.commit()
+    cur.close()
+
+    return jsonify({'success': True, 'message': message})
+
+
+@app.route('/admin/payments/proof/<int:payment_id>')
+@admin_required
+def get_payment_proof(payment_id):
+    """Get payment proof details."""
+    cur = mysql.connection.cursor(DictCursor)
+    cur.execute("""
+        SELECT p.*, o.totalamount, o.id as order_id, u.name as customer_name, u.email
+        FROM payments p
+        JOIN orders o ON p.orderid = o.id
+        JOIN users u ON o.userid = u.id
+        WHERE p.id = %s
+    """, (payment_id,))
+    payment = cur.fetchone()
+    cur.close()
+
+    if not payment:
+        return jsonify({'success': False, 'message': 'Payment not found'}), 404
+
+    return jsonify({
+        'success': True,
+        'payment': {
+            'id': payment['id'],
+            'order_id': payment['order_id'],
+            'method': payment['method'],
+            'status': payment['status'],
+            'reference_no': payment['reference_no'],
+            'proof_image': payment['proof_image'],
+            'total_amount': float(payment['totalamount']),
+            'customer_name': payment['customer_name'],
+            'customer_email': payment['email']
+        }
+    })
+
 
 #Admin - SALes report
 
