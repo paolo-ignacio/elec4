@@ -835,6 +835,7 @@ def get_orders():
             "status": order["status"],
             "shippingaddress": order["shippingaddress"],
             "createdat": order["createdat"].isoformat() if order["createdat"] else None,
+            "cancellation_reason": order["cancellation_reason"],
             "payment_method": order["payment_method"],
             "payment_status": order["payment_status"],
             "reference_no": order["reference_no"],
@@ -849,6 +850,52 @@ def get_orders():
         orders_list.append(order_dict)
 
     return jsonify({"success": True, "orders": orders_list})
+
+
+@app.route("/api/orders/cancel/<int:order_id>", methods=["POST"])
+@login_required
+@csrf.exempt
+def cancel_user_order(order_id):
+    """Cancel an order (user-side). Only pending/processing orders can be cancelled."""
+    data = request.get_json() if request.is_json else request.form
+    reason = data.get("reason", "").strip()
+
+    if not reason:
+        return jsonify({"success": False, "message": "Please provide a reason for cancellation."}), 400
+
+    cur = mysql.connection.cursor(DictCursor)
+
+    # Get the order and verify ownership
+    cur.execute("SELECT id, status, userid FROM orders WHERE id = %s", (order_id,))
+    order = cur.fetchone()
+
+    if not order:
+        cur.close()
+        return jsonify({"success": False, "message": "Order not found."}), 404
+
+    # Verify the user owns this order
+    if order["userid"] != session["user_id"]:
+        cur.close()
+        return jsonify({"success": False, "message": "Unauthorized."}), 403
+
+    # Check if order can be cancelled (only pending or processing)
+    current_status = order["status"]
+    if current_status not in ["pending", "processing"]:
+        cur.close()
+        return jsonify({
+            "success": False,
+            "message": f"Cannot cancel order with status '{current_status}'. Only pending or processing orders can be cancelled."
+        }), 400
+
+    # Update order status to cancelled
+    cur.execute(
+        "UPDATE orders SET status = 'cancelled', cancellation_reason = %s WHERE id = %s",
+        (reason, order_id)
+    )
+    mysql.connection.commit()
+    cur.close()
+
+    return jsonify({"success": True, "message": "Order cancelled successfully."})
 
 
 # ================================
@@ -1954,6 +2001,8 @@ def update_order_status(order_id):
         # Perform update
         if new_status == 'cancelled':
             cur.execute("UPDATE orders SET status = %s, cancellation_reason = %s WHERE id = %s", (new_status, reason, order_id))
+        elif new_status == 'completed':
+            cur.execute("UPDATE orders SET status = %s, createdat = NOW() WHERE id = %s", (new_status, order_id))
         else:
             cur.execute("UPDATE orders SET status = %s WHERE id = %s", (new_status, order_id))
 

@@ -4195,3 +4195,240 @@
         flex: 1;
     }
 }
+
+/* ================================
+   ORDER CANCELLATION
+   ================================ */
+
+/* Cancel Order Button in Order Detail */
+.order-actions-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.cancel-order-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 24px;
+    background: transparent;
+    border: 2px solid #ef4444;
+    color: #ef4444;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-order-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.cancel-order-btn svg {
+    flex-shrink: 0;
+}
+
+/* Cancellation Reason Display */
+.cancellation-section {
+    border-color: #fecaca !important;
+    background: #fef2f2 !important;
+}
+
+.cancellation-section h4 {
+    color: #ef4444 !important;
+    border-color: #fca5a5 !important;
+}
+
+.cancellation-reason-box {
+    background: white;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid #fecaca;
+}
+
+.cancellation-reason-box p {
+    margin: 0;
+    color: #991b1b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Cancel Order Modal */
+.cancel-order-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    padding: 20px;
+}
+
+.cancel-order-modal {
+    background: white;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.cancel-order-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.cancel-order-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.cancel-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.cancel-modal-close:hover {
+    color: var(--text-dark);
+}
+
+.cancel-order-modal-body {
+    padding: 24px;
+}
+
+.cancel-warning {
+    margin: 0 0 20px;
+    padding: 14px;
+    background: #fef3c7;
+    border-radius: var(--radius-md);
+    color: #92400e;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.cancel-reason-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cancel-reason-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.cancel-reason-group label .required {
+    color: #ef4444;
+}
+
+.cancel-reason-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+}
+
+.cancel-reason-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.cancel-reason-group textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.cancel-order-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.cancel-modal-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.cancel-btn-secondary {
+    background: var(--bg-light);
+    color: var(--text-dark);
+}
+
+.cancel-btn-secondary:hover {
+    background: var(--border-color);
+}
+
+.cancel-btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.cancel-btn-danger:hover {
+    background: #dc2626;
+}
+
+.cancel-btn-danger:disabled {
+    background: #fca5a5;
+    cursor: not-allowed;
+}
+
+/* Responsive Cancel Modal */
+@media (max-width: 480px) {
+    .cancel-order-modal {
+        margin: 0;
+        max-width: 100%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .cancel-order-modal-footer {
+        flex-direction: column-reverse;
+    }
+}

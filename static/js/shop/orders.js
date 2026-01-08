@@ -454,6 +454,35 @@ function showOrderDetail(order) {
                 <span>₱${parseFloat(order.totalamount).toFixed(2)}</span>
             </div>
         </div>
+
+        ${status === 'cancelled' && order.cancellation_reason ? `
+        <div class="order-detail-section cancellation-section">
+            <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                Cancellation Reason
+            </h4>
+            <div class="cancellation-reason-box">
+                <p>${order.cancellation_reason}</p>
+            </div>
+        </div>
+        ` : ''}
+
+        ${(status === 'pending' || status === 'processing') ? `
+        <div class="order-actions-section">
+            <button class="cancel-order-btn" onclick="showCancelOrderModal(${order.id})">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                Cancel Order
+            </button>
+        </div>
+        ` : ''}
     `;
 
     // Hide list view, show detail view
@@ -486,4 +515,99 @@ function openImageModal(src) {
         }
     });
     document.body.appendChild(modal);
+}
+
+// ================================
+// ORDER CANCELLATION
+// ================================
+let cancelOrderId = null;
+
+function showCancelOrderModal(orderId) {
+    cancelOrderId = orderId;
+
+    // Create cancellation modal
+    const modal = document.createElement('div');
+    modal.className = 'cancel-order-modal-overlay';
+    modal.id = 'cancelOrderModal';
+    modal.innerHTML = `
+        <div class="cancel-order-modal">
+            <div class="cancel-order-modal-header">
+                <h3>Cancel Order #${String(orderId).padStart(6, '0')}</h3>
+                <button class="cancel-modal-close" onclick="closeCancelOrderModal()">&times;</button>
+            </div>
+            <div class="cancel-order-modal-body">
+                <p class="cancel-warning">Are you sure you want to cancel this order? This action cannot be undone.</p>
+                <div class="cancel-reason-group">
+                    <label for="cancelReason">Reason for cancellation <span class="required">*</span></label>
+                    <textarea id="cancelReason" rows="3" placeholder="Please tell us why you want to cancel this order..."></textarea>
+                </div>
+            </div>
+            <div class="cancel-order-modal-footer">
+                <button class="cancel-modal-btn cancel-btn-secondary" onclick="closeCancelOrderModal()">Keep Order</button>
+                <button class="cancel-modal-btn cancel-btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()">Cancel Order</button>
+            </div>
+        </div>
+    `;
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeCancelOrderModal();
+        }
+    });
+
+    document.body.appendChild(modal);
+    document.getElementById('cancelReason').focus();
+}
+
+function closeCancelOrderModal() {
+    const modal = document.getElementById('cancelOrderModal');
+    if (modal) {
+        modal.remove();
+    }
+    cancelOrderId = null;
+}
+
+async function confirmCancelOrder() {
+    if (!cancelOrderId) return;
+
+    const reasonInput = document.getElementById('cancelReason');
+    const reason = reasonInput.value.trim();
+
+    if (!reason) {
+        reasonInput.style.borderColor = '#ef4444';
+        reasonInput.focus();
+        return;
+    }
+
+    const confirmBtn = document.getElementById('confirmCancelBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Cancelling...';
+
+    try {
+        const response = await fetch(`/api/orders/cancel/${cancelOrderId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reason: reason })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            closeCancelOrderModal();
+            showToast('Order cancelled successfully', 'success');
+            // Refresh orders list
+            await openOrders();
+        } else {
+            showToast(data.message || 'Failed to cancel order', 'error');
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Cancel Order';
+        }
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        showToast('Error cancelling order', 'error');
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Cancel Order';
+    }
 }

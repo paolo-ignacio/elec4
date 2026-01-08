@@ -369,7 +369,6 @@
             if (action === 'reject') {
                 const reason = document.getElementById('reject-reason').value.trim();
                 if (!reason) {
-                    alert('Please provide a reason for rejection.');
                     document.getElementById('reject-reason').focus();
                     return;
                 }
@@ -395,11 +394,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
                     closeProofModal();
                     window.location.reload();
                 } else {
-                    alert(data.message || 'An error occurred');
                     approveBtn.disabled = false;
                     rejectBtn.disabled = false;
                     approveBtn.textContent = 'Approve Payment';
@@ -408,7 +405,6 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while processing the payment.');
                 approveBtn.disabled = false;
                 rejectBtn.disabled = false;
                 approveBtn.textContent = 'Approve Payment';
@@ -703,7 +699,7 @@
 
         function verifyOrderPayment(action) {
             if (!currentOrderData || !currentOrderData.order.payment_id) {
-                alert('Payment ID not found. Please refresh the page and try again.');
+                window.location.reload();
                 return;
             }
 
@@ -712,7 +708,7 @@
                 if (rejectTextarea) {
                     const reason = rejectTextarea.value.trim();
                     if (!reason) {
-                        alert('Please provide a rejection reason');
+                        rejectTextarea.focus();
                         return;
                     }
                 }
@@ -743,15 +739,11 @@
             })
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
                     window.location.reload();
-                } else {
-                    alert(data.message || 'Error processing payment');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error processing payment');
             });
         }
 
@@ -773,17 +765,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Order status updated successfully');
                     window.location.reload();
                 } else {
-                    alert(data.message || data.errors?.status?.[0] || 'Error updating status');
                     btn.disabled = false;
                     btn.textContent = originalText;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error updating status');
                 btn.disabled = false;
                 btn.textContent = originalText;
             });
@@ -919,8 +908,6 @@
                             if (result.body.errors.reason && statusSelect && statusSelect.value === 'cancelled' && cancellationReasonGroup) {
                                 cancellationReasonGroup.style.display = 'block';
                             }
-                        } else {
-                            alert('An error occurred. Please try again.');
                         }
                     }
                 })
